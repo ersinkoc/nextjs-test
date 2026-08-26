@@ -80,6 +80,13 @@ function AppContent() {
   }, [isDark]);
 
   useEffect(() => {
+    const savedBrandColor = localStorage.getItem('nextjs_arena_brand_color');
+    if (savedBrandColor) {
+      document.documentElement.style.setProperty('--brand-primary', savedBrandColor);
+    }
+  }, []);
+
+  useEffect(() => {
     localStorage.setItem('deneme_app_notes', JSON.stringify(notes));
   }, [notes]);
 

@@ -101,7 +101,7 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({
       title: t('nav.tools'),
       category: 'Utilities',
       icon: Wrench,
-      keywords: 'tools config next.config.ts middleware otel uuid base64 json',
+      keywords: 'tools config custom branding brand color palette css variable next.config.ts middleware otel uuid base64 json',
     },
   ];
 
