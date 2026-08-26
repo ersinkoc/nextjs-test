@@ -1,8 +1,11 @@
 import React, { useState } from 'react';
 import { Plus, Minus, RotateCcw, Zap, Sparkles, TrendingUp } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
+import { useI18n } from '../i18n';
 
 export const InteractiveCounter: React.FC = () => {
+  const { t, language } = useI18n();
+
   const [count, setCount] = useState<number>(0);
   const [step, setStep] = useState<number>(1);
   const [history, setHistory] = useState<{ id: string; val: number; change: string; time: string }[]>([]);
@@ -21,13 +24,13 @@ export const InteractiveCounter: React.FC = () => {
 
   const handleReset = () => {
     setCount(0);
-    logAction(0, 'Sıfırlandı');
+    logAction(0, language === 'tr' ? 'Sıfırlandı' : 'Reset');
   };
 
   const handleRandom = () => {
     const randomVal = Math.floor(Math.random() * 200) - 100;
     setCount(randomVal);
-    logAction(randomVal, 'Rastgele');
+    logAction(randomVal, language === 'tr' ? 'Rastgele' : 'Random');
   };
 
   const logAction = (val: number, change: string) => {
@@ -46,7 +49,7 @@ export const InteractiveCounter: React.FC = () => {
         <div className="flex items-center justify-between mb-4">
           <span className="text-xs font-bold text-zinc-500 dark:text-neutral-500 uppercase tracking-widest flex items-center gap-1.5">
             <Zap className="w-3.5 h-3.5 text-emerald-500" />
-            Client State Engine
+            {t('counter.badge')}
           </span>
           <span className="text-[10px] font-mono font-semibold uppercase bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 px-2.5 py-0.5 rounded-full">
             'use client'
@@ -68,7 +71,7 @@ export const InteractiveCounter: React.FC = () => {
             </motion.div>
           </AnimatePresence>
           <p className="text-xs text-zinc-400 dark:text-neutral-500 mt-2 font-mono">
-            Mevcut değer &bull; Adım Boyutu: {step}
+            {t('counter.currentVal')} &bull; {t('counter.stepSize')}: {step}
           </p>
         </div>
 
@@ -76,21 +79,21 @@ export const InteractiveCounter: React.FC = () => {
         <div className="grid grid-cols-4 gap-2 mb-4">
           <button
             onClick={handleDecrement}
-            className="flex items-center justify-center p-3 rounded-2xl bg-zinc-100 hover:bg-zinc-200 dark:bg-neutral-800 dark:hover:bg-neutral-700 text-zinc-800 dark:text-neutral-200 transition-colors font-bold active:scale-95 border border-zinc-200 dark:border-neutral-700/60"
-            title="Azalt"
+            className="flex items-center justify-center p-3 rounded-2xl bg-zinc-100 hover:bg-zinc-200 dark:bg-neutral-800 dark:hover:bg-neutral-700 text-zinc-800 dark:text-neutral-200 transition-colors font-bold active:scale-95 border border-zinc-200 dark:border-neutral-700/60 cursor-pointer"
+            title={t('counter.decrease')}
           >
             <Minus className="w-5 h-5" />
           </button>
           <button
             onClick={handleIncrement}
-            className="col-span-2 flex items-center justify-center p-3 rounded-2xl bg-emerald-500 hover:bg-emerald-400 text-neutral-950 transition-all font-bold active:scale-95 shadow-sm text-xs sm:text-sm"
+            className="col-span-2 flex items-center justify-center p-3 rounded-2xl bg-emerald-500 hover:bg-emerald-400 text-neutral-950 transition-all font-bold active:scale-95 shadow-sm text-xs sm:text-sm cursor-pointer"
           >
-            <Plus className="w-4 h-4 mr-1 stroke-[3]" /> Artır (+{step})
+            <Plus className="w-4 h-4 mr-1 stroke-[3]" /> {t('counter.increase')} (+{step})
           </button>
           <button
             onClick={handleReset}
-            className="flex items-center justify-center p-3 rounded-2xl bg-zinc-100 hover:bg-zinc-200 dark:bg-neutral-800 dark:hover:bg-neutral-700 text-zinc-800 dark:text-neutral-200 transition-colors active:scale-95 border border-zinc-200 dark:border-neutral-700/60"
-            title="Sıfırla"
+            className="flex items-center justify-center p-3 rounded-2xl bg-zinc-100 hover:bg-zinc-200 dark:bg-neutral-800 dark:hover:bg-neutral-700 text-zinc-800 dark:text-neutral-200 transition-colors active:scale-95 border border-zinc-200 dark:border-neutral-700/60 cursor-pointer"
+            title={t('counter.reset')}
           >
             <RotateCcw className="w-4 h-4" />
           </button>
@@ -99,12 +102,12 @@ export const InteractiveCounter: React.FC = () => {
         {/* Step & Random selectors */}
         <div className="flex items-center justify-between gap-2 pt-3 border-t border-zinc-100 dark:border-neutral-800/80 text-xs">
           <div className="flex items-center gap-1.5">
-            <span className="text-zinc-500 dark:text-neutral-500 font-mono text-[11px]">Adım:</span>
+            <span className="text-zinc-500 dark:text-neutral-500 font-mono text-[11px]">{t('counter.step')}:</span>
             {[1, 5, 10, 50].map((s) => (
               <button
                 key={s}
                 onClick={() => setStep(s)}
-                className={`px-2.5 py-1 rounded-full text-[11px] font-mono transition-all ${
+                className={`px-2.5 py-1 rounded-full text-[11px] font-mono transition-all cursor-pointer ${
                   step === s
                     ? 'bg-zinc-900 text-white dark:bg-emerald-500 dark:text-neutral-950 font-bold shadow-xs'
                     : 'bg-zinc-100 dark:bg-neutral-800 text-zinc-600 dark:text-neutral-400 hover:bg-zinc-200 dark:hover:bg-neutral-700'
@@ -117,9 +120,9 @@ export const InteractiveCounter: React.FC = () => {
 
           <button
             onClick={handleRandom}
-            className="text-[11px] flex items-center gap-1 text-emerald-600 dark:text-emerald-400 hover:underline font-semibold"
+            className="text-[11px] flex items-center gap-1 text-emerald-600 dark:text-emerald-400 hover:underline font-semibold cursor-pointer"
           >
-            <Sparkles className="w-3.5 h-3.5" /> Rastgele
+            <Sparkles className="w-3.5 h-3.5" /> {t('counter.random')}
           </button>
         </div>
       </div>
@@ -128,7 +131,7 @@ export const InteractiveCounter: React.FC = () => {
       {history.length > 0 && (
         <div className="mt-4 pt-3 border-t border-zinc-100 dark:border-neutral-800/80">
           <p className="text-[11px] font-bold text-zinc-400 dark:text-neutral-500 mb-2 uppercase tracking-wider flex items-center gap-1">
-            <TrendingUp className="w-3 h-3 text-emerald-500" /> Son Değişiklikler:
+            <TrendingUp className="w-3 h-3 text-emerald-500" /> {t('counter.recentChanges')}:
           </p>
           <div className="space-y-1.5">
             {history.map((item) => (
@@ -138,7 +141,7 @@ export const InteractiveCounter: React.FC = () => {
               >
                 <span className="font-semibold text-emerald-600 dark:text-emerald-400">{item.change}</span>
                 <span className="font-semibold text-zinc-800 dark:text-neutral-200">
-                  Sonuç: {item.val}
+                  {t('counter.result')}: {item.val}
                 </span>
                 <span className="text-zinc-400 dark:text-neutral-500">{item.time}</span>
               </div>

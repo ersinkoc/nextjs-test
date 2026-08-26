@@ -5,8 +5,11 @@ import { InteractiveCounter } from './components/InteractiveCounter';
 import { QuickNotes } from './components/QuickNotes';
 import { ApiSimulator } from './components/ApiSimulator';
 import { DeveloperTools } from './components/DeveloperTools';
+import { TestArena } from './components/TestArena';
+import { PerformanceLab } from './components/PerformanceLab';
 import { ActiveTab, NoteItem } from './types';
 import { motion, AnimatePresence } from 'motion/react';
+import { I18nProvider, useI18n } from './i18n';
 
 const INITIAL_NOTES: NoteItem[] = [
   {
@@ -35,7 +38,8 @@ const INITIAL_NOTES: NoteItem[] = [
   },
 ];
 
-export default function App() {
+function AppContent() {
+  const { t, language } = useI18n();
   const [activeTab, setActiveTab] = useState<ActiveTab>('overview');
   const [isDark, setIsDark] = useState<boolean>(() => {
     return true; // Default to dark for premium Bento Grid aesthetic
@@ -72,7 +76,7 @@ export default function App() {
       content,
       category,
       completed: false,
-      createdAt: 'Az önce',
+      createdAt: language === 'tr' ? 'Az önce' : 'Just now',
     };
     setNotes((prev) => [newNote, ...prev]);
   };
@@ -135,6 +139,30 @@ export default function App() {
             </motion.div>
           )}
 
+          {activeTab === 'test-arena' && (
+            <motion.div
+              key="test-arena"
+              initial={{ opacity: 0, y: 8 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -8 }}
+              transition={{ duration: 0.2 }}
+            >
+              <TestArena />
+            </motion.div>
+          )}
+
+          {activeTab === 'performance-lab' && (
+            <motion.div
+              key="performance-lab"
+              initial={{ opacity: 0, y: 8 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -8 }}
+              transition={{ duration: 0.2 }}
+            >
+              <PerformanceLab />
+            </motion.div>
+          )}
+
           {activeTab === 'scratchpad' && (
             <motion.div
               key="scratchpad"
@@ -189,12 +217,20 @@ export default function App() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-3 text-[11px] uppercase tracking-[0.18em] text-zinc-500 dark:text-neutral-500 font-bold font-mono">
           <div className="flex items-center gap-2">
             <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
-            <span>Project ID: PRJ_91002_NEXT_DEV</span>
+            <span>Project ID: PRJ_91002_ARENA_TEST_ENGINE</span>
           </div>
-          <div>Environment: Production-Preview</div>
-          <div>Next.js: v15.2.0 &bull; Node: 20.10.0</div>
+          <div>{t('footer.env')}</div>
+          <div>{t('footer.runtime')}</div>
         </div>
       </footer>
     </div>
+  );
+}
+
+export default function App() {
+  return (
+    <I18nProvider>
+      <AppContent />
+    </I18nProvider>
   );
 }

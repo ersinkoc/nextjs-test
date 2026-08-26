@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { ActiveTab } from '../types';
-import { Sparkles, ArrowRight, Zap, Cloud, Box, Server, Clock, GitCommit, Play, CheckCircle2 } from 'lucide-react';
+import { Sparkles, ArrowRight, Zap, Cloud, Box, Server, Clock, GitCommit, Play, CheckCircle2, Swords, Gauge } from 'lucide-react';
 import { motion } from 'motion/react';
+import { useI18n } from '../i18n';
 
 interface OverviewHeroProps {
   setActiveTab: (tab: ActiveTab) => void;
@@ -9,16 +10,31 @@ interface OverviewHeroProps {
 }
 
 export const OverviewHero: React.FC<OverviewHeroProps> = ({ setActiveTab, notesCount }) => {
+  const { t, language } = useI18n();
   const [latency, setLatency] = useState<number>(24);
   const [buildTime, setBuildTime] = useState<string>('1.2');
-  const [recentCommits, setRecentCommits] = useState([
-    { id: '1', title: 'feat: add bento grid layout', time: '2m ago', color: 'from-emerald-400 to-cyan-400' },
-    { id: '2', title: 'fix: hydration error in app router', time: '1h ago', color: 'bg-neutral-700' },
-    { id: '3', title: 'chore: update next.js to v15.2', time: '3h ago', color: 'bg-neutral-800' },
-  ]);
-  const [copiedNotification, setCopiedNotification] = useState(false);
 
-  // Periodic latency simulation for dynamic bento tile
+  const recentCommits = [
+    {
+      id: '1',
+      title: language === 'tr' ? 'feat: kapsamlı test arenası & i18n çift dil desteği' : 'feat: full test arena & i18n dual language support',
+      time: language === 'tr' ? 'Az önce' : 'Just now',
+      color: 'from-emerald-400 to-cyan-400',
+    },
+    {
+      id: '2',
+      title: language === 'tr' ? 'fix: app router & edge hydration uyuşmazlığı düzeltildi' : 'fix: app router & edge hydration mismatch resolved',
+      time: language === 'tr' ? '1 sa önce' : '1h ago',
+      color: 'bg-neutral-700',
+    },
+    {
+      id: '3',
+      title: language === 'tr' ? 'chore: Node 22 LTS & Next.js 15.2 bağımlılık güncellemesi' : 'chore: Node 22 LTS & Next.js 15.2 dependency update',
+      time: language === 'tr' ? '3 sa önce' : '3h ago',
+      color: 'bg-neutral-800',
+    },
+  ];
+
   useEffect(() => {
     const interval = setInterval(() => {
       setLatency(Math.floor(Math.random() * 15) + 18);
@@ -26,53 +42,54 @@ export const OverviewHero: React.FC<OverviewHeroProps> = ({ setActiveTab, notesC
     return () => clearInterval(interval);
   }, []);
 
-  const handleGoLiveClick = () => {
-    setActiveTab('api-simulator');
-  };
-
   return (
     <div className="space-y-5">
       {/* Bento Grid Main Layout */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-5">
-        {/* 1. Large Hero Bento Tile (2 cols, 2 rows on large screens) */}
+        {/* 1. Large Hero Bento Tile */}
         <div className="lg:col-span-2 lg:row-span-2 bg-white dark:bg-neutral-900 border border-zinc-200 dark:border-neutral-800 rounded-3xl p-6 sm:p-8 flex flex-col justify-between relative overflow-hidden shadow-sm transition-all">
-          {/* Subtle grid pattern background */}
           <div className="absolute inset-0 opacity-5 dark:opacity-10 bg-[radial-gradient(#ffffff_1px,transparent_1px)] [background-size:16px_16px] pointer-events-none"></div>
 
           <div className="relative z-10">
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-xs font-bold text-emerald-600 dark:text-emerald-500 uppercase tracking-widest mb-4">
-              <span>Next.js Core Application</span>
+              <span>{t('hero.badge')}</span>
             </div>
 
             <h2 className="text-3xl sm:text-5xl font-bold tracking-tight text-zinc-900 dark:text-white leading-tight mt-1">
-              Build faster,<br />
-              <span className="text-emerald-500">ship smarter.</span>
+              {t('hero.titleLine1')}<br />
+              <span className="text-emerald-500">{t('hero.titleLine2')}</span>
             </h2>
 
             <p className="mt-4 text-zinc-600 dark:text-neutral-400 text-xs sm:text-sm leading-relaxed max-w-md">
-              Next.js 15 & App Router mimarisi için hafif, reaktif ve çok amaçlı test ortamı. Route Handlers, Server Actions, durum yönetimi ve pratik araçlar tek çatıda.
+              {t('hero.desc')}
             </p>
           </div>
 
           <div className="mt-8 flex flex-wrap items-center justify-between gap-4 z-10">
-            <div className="flex gap-3 items-center">
-              <div className="h-12 w-12 rounded-2xl bg-zinc-100 dark:bg-neutral-800 border border-zinc-200 dark:border-neutral-700/60 flex items-center justify-center text-xl shadow-xs" title="Turbopack">
-                ⚡
-              </div>
-              <div className="h-12 w-12 rounded-2xl bg-zinc-100 dark:bg-neutral-800 border border-zinc-200 dark:border-neutral-700/60 flex items-center justify-center text-xl shadow-xs" title="Edge Cloud">
-                ☁️
-              </div>
-              <div className="h-12 w-12 rounded-2xl bg-zinc-100 dark:bg-neutral-800 border border-zinc-200 dark:border-neutral-700/60 flex items-center justify-center text-xl shadow-xs" title="Components">
-                📦
-              </div>
+            <div className="flex gap-2.5 items-center">
+              <button
+                onClick={() => setActiveTab('test-arena')}
+                className="px-4 py-2 bg-emerald-500 hover:bg-emerald-400 text-neutral-950 font-bold text-xs rounded-full flex items-center gap-1.5 transition-all shadow-sm active:scale-95 cursor-pointer"
+              >
+                <Swords className="w-3.5 h-3.5" />
+                <span>{t('hero.enterArena')}</span>
+              </button>
+
+              <button
+                onClick={() => setActiveTab('performance-lab')}
+                className="px-3.5 py-2 bg-zinc-100 dark:bg-neutral-800 hover:bg-zinc-200 dark:hover:bg-neutral-700 text-zinc-800 dark:text-neutral-200 font-semibold text-xs rounded-full flex items-center gap-1.5 transition-colors cursor-pointer border border-zinc-200 dark:border-neutral-700"
+              >
+                <Gauge className="w-3.5 h-3.5 text-cyan-400" />
+                <span>{t('hero.perfLab')}</span>
+              </button>
             </div>
 
             <button
               onClick={() => setActiveTab('scratchpad')}
-              className="px-4 py-2 bg-zinc-900 dark:bg-neutral-800 hover:bg-black dark:hover:bg-neutral-700 border border-zinc-800 dark:border-neutral-700 text-white text-xs font-semibold rounded-full flex items-center gap-1.5 transition-all active:scale-95"
+              className="text-xs font-mono text-zinc-500 dark:text-neutral-400 hover:text-emerald-500 flex items-center gap-1 cursor-pointer"
             >
-              <span>Notlara Git ({notesCount})</span>
-              <ArrowRight className="w-3.5 h-3.5 text-emerald-400" />
+              <span>{t('hero.notesCount')} ({notesCount})</span>
+              <ArrowRight className="w-3 h-3" />
             </button>
           </div>
 
@@ -84,9 +101,9 @@ export const OverviewHero: React.FC<OverviewHeroProps> = ({ setActiveTab, notesC
         <div className="bg-white dark:bg-neutral-900 border border-zinc-200 dark:border-neutral-800 rounded-3xl p-6 flex flex-col justify-between shadow-sm">
           <div className="flex items-center justify-between">
             <span className="text-xs font-bold text-zinc-500 dark:text-neutral-500 uppercase tracking-widest">
-              API Latency
+              {t('hero.edgeLatency')}
             </span>
-            <span className="w-2 h-2 rounded-full bg-emerald-500"></span>
+            <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
           </div>
 
           <div className="my-4">
@@ -95,7 +112,7 @@ export const OverviewHero: React.FC<OverviewHeroProps> = ({ setActiveTab, notesC
               <span className="text-zinc-500 dark:text-neutral-500 text-lg ml-1 font-sans">ms</span>
             </div>
 
-            {/* Simulated Dynamic Bar Chart */}
+            {/* Dynamic Bar Chart */}
             <div className="mt-4 flex items-end gap-1.5 h-12">
               <div className="w-full bg-zinc-200 dark:bg-neutral-800 h-1/2 rounded-md transition-all"></div>
               <div className="w-full bg-zinc-200 dark:bg-neutral-800 h-2/3 rounded-md transition-all"></div>
@@ -106,37 +123,43 @@ export const OverviewHero: React.FC<OverviewHeroProps> = ({ setActiveTab, notesC
           </div>
 
           <p className="text-[10px] font-mono text-zinc-400 dark:text-neutral-500">
-            Edge Region &bull; fra1 (Frankfurt)
+            {t('hero.edgeRegion')}
           </p>
         </div>
 
-        {/* 3. Server Status Bento Card */}
-        <div className="bg-white dark:bg-neutral-900 border border-zinc-200 dark:border-neutral-800 rounded-3xl p-6 flex flex-col justify-between shadow-sm">
-          <span className="text-xs font-bold text-zinc-500 dark:text-neutral-500 uppercase tracking-widest">
-            Server Status
-          </span>
+        {/* 3. Test Suites Passed Bento Card */}
+        <div
+          onClick={() => setActiveTab('test-arena')}
+          className="bg-white dark:bg-neutral-900 border border-zinc-200 dark:border-neutral-800 rounded-3xl p-6 flex flex-col justify-between shadow-sm hover:border-emerald-500/50 transition-colors cursor-pointer"
+        >
+          <div className="flex items-center justify-between">
+            <span className="text-xs font-bold text-zinc-500 dark:text-neutral-500 uppercase tracking-widest">
+              {t('hero.testCoverage')}
+            </span>
+            <Swords className="w-4 h-4 text-emerald-500" />
+          </div>
 
-          <div className="text-center py-2 sm:py-4">
-            <div className="text-4xl sm:text-5xl font-bold text-emerald-500 tracking-tight">
-              99.9%
+          <div className="text-center py-2 sm:py-3">
+            <div className="text-4xl sm:text-5xl font-bold text-emerald-500 tracking-tight font-mono">
+              100%
             </div>
             <p className="text-[11px] text-zinc-500 dark:text-neutral-400 mt-2 font-mono">
-              Uptime &bull; Last 30 Days
+              {t('hero.testModules')}
             </p>
           </div>
 
           <div className="flex items-center justify-between text-[11px] font-mono text-zinc-400 dark:text-neutral-500 pt-2 border-t border-zinc-100 dark:border-neutral-800/80">
-            <span>SSL / TLS 1.3</span>
-            <span className="text-emerald-500 font-semibold">Active</span>
+            <span>{t('hero.regressionCheck')}</span>
+            <span className="text-emerald-500 font-semibold">{t('hero.allPassed')}</span>
           </div>
         </div>
 
-        {/* 4. Recent Commits / Activity Bento Card (2 cols on md/lg) */}
+        {/* 4. Recent Commits / Activity Bento Card */}
         <div className="lg:col-span-2 bg-white dark:bg-neutral-900 border border-zinc-200 dark:border-neutral-800 rounded-3xl p-6 flex flex-col justify-between shadow-sm">
           <div className="flex items-center justify-between mb-2">
             <span className="text-xs font-bold text-zinc-500 dark:text-neutral-500 uppercase tracking-widest flex items-center gap-1.5">
               <GitCommit className="w-3.5 h-3.5 text-zinc-400 dark:text-neutral-500" />
-              Recent Commits & Builds
+              {t('hero.commitLog')}
             </span>
             <span className="text-[10px] font-mono text-zinc-400 dark:text-neutral-500">main branch</span>
           </div>
@@ -169,14 +192,14 @@ export const OverviewHero: React.FC<OverviewHeroProps> = ({ setActiveTab, notesC
           </div>
 
           <p className="text-[10px] font-mono text-zinc-400 dark:text-neutral-500 mt-1">
-            Commit SHA: a8f9210 &bull; Verified Build
+            Commit SHA: 9f4b10e &bull; JIT Verified
           </p>
         </div>
 
         {/* 5. Build Time Bento Card */}
         <div className="bg-white dark:bg-neutral-900 border border-zinc-200 dark:border-neutral-800 rounded-3xl p-6 flex flex-col justify-between shadow-sm">
           <span className="text-xs font-bold text-zinc-500 dark:text-neutral-500 uppercase tracking-widest">
-            Build Time
+            {t('hero.buildTime')}
           </span>
 
           <div className="my-2">
@@ -184,7 +207,7 @@ export const OverviewHero: React.FC<OverviewHeroProps> = ({ setActiveTab, notesC
               <div className="text-4xl font-bold text-zinc-900 dark:text-white italic tracking-tight font-mono">
                 {buildTime}
               </div>
-              <div className="text-zinc-500 dark:text-neutral-400 text-xs sm:text-sm">seconds</div>
+              <div className="text-zinc-500 dark:text-neutral-400 text-xs sm:text-sm">{t('hero.seconds')}</div>
             </div>
 
             <div className="w-full bg-zinc-200 dark:bg-neutral-800 h-2 rounded-full mt-4 overflow-hidden">
@@ -193,22 +216,22 @@ export const OverviewHero: React.FC<OverviewHeroProps> = ({ setActiveTab, notesC
           </div>
 
           <p className="text-[10px] font-mono text-zinc-400 dark:text-neutral-500">
-            Turbopack incremental build
+            {t('hero.turbopackHmr')}
           </p>
         </div>
 
-        {/* 6. Go Live / Action Bento Card */}
+        {/* 6. Action Bento Card */}
         <div
-          onClick={handleGoLiveClick}
+          onClick={() => setActiveTab('api-simulator')}
           className="bg-emerald-500 hover:bg-emerald-400 border border-emerald-400 rounded-3xl p-6 flex flex-col justify-between group cursor-pointer shadow-md transition-all active:scale-98"
         >
           <span className="text-xs font-bold text-emerald-950 uppercase tracking-widest">
-            Go Live & Test
+            {t('hero.apiAction')}
           </span>
 
           <div className="my-3 flex items-center justify-between">
             <div className="text-neutral-950 font-bold text-2xl tracking-tight">
-              Test APIs & Actions
+              {t('hero.routeRunner')}
             </div>
             <div className="text-3xl text-neutral-950 group-hover:translate-x-1.5 transition-transform">
               →
@@ -216,7 +239,7 @@ export const OverviewHero: React.FC<OverviewHeroProps> = ({ setActiveTab, notesC
           </div>
 
           <p className="text-[11px] font-semibold text-emerald-900">
-            Route Handlers ve Edge Stream'i test edin
+            {t('hero.routeRunnerDesc')}
           </p>
         </div>
       </div>

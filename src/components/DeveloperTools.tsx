@@ -1,189 +1,297 @@
 import React, { useState } from 'react';
-import { Wrench, Copy, Check, Sparkles, Hash, Code, RefreshCw } from 'lucide-react';
+import { 
+  Code2, 
+  Copy, 
+  Check, 
+  Terminal, 
+  Cpu, 
+  Key, 
+  FileCode, 
+  Sparkles, 
+  ArrowRightLeft, 
+  Braces,
+  Hash
+} from 'lucide-react';
+import { useI18n } from '../i18n';
 
 export const DeveloperTools: React.FC = () => {
-  // UUID generator
-  const [uuid, setUuid] = useState<string>('c9bf9e57-1685-4c89-bafb-ff5af830be8a');
-  const [copiedUuid, setCopiedUuid] = useState(false);
+  const { t, language } = useI18n();
 
-  // Text Case Converter
-  const [inputText, setInputText] = useState('deneme projesi ornegi');
+  const [uuid, setUuid] = useState<string>('e7b9a4c1-58d2-4e89-b76f-9988a101f3e2');
+  const [copiedId, setCopiedId] = useState<string | null>(null);
 
-  // JSON Formatter
-  const [rawJson, setRawJson] = useState('{"status":"success","framework":"NextJS","version":15,"experimental":{"turbopack":true,"bentoGrid":true}}');
+  const [base64Input, setBase64Input] = useState<string>('Hello Next.js 15!');
+  const [base64Mode, setBase64Mode] = useState<'encode' | 'decode'>('encode');
+
+  const [caseInput, setCaseInput] = useState<string>('nextjs_test_arena_playground');
+
+  const [jsonInput, setJsonInput] = useState<string>(
+    '{"framework":"Next.js 15.2","node":"22 LTS","turbopack":true,"features":["Server Actions","PPR","Edge Streaming"]}'
+  );
+  const [formattedJson, setFormattedJson] = useState<string>('');
   const [jsonError, setJsonError] = useState<string | null>(null);
-  const [formattedJson, setFormattedJson] = useState('');
 
-  // Generate UUID
-  const handleGenerateUuid = () => {
-    const newId = 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
+  const copyToClipboard = (text: string, id: string) => {
+    navigator.clipboard.writeText(text);
+    setCopiedId(id);
+    setTimeout(() => setCopiedId(null), 1800);
+  };
+
+  const generateUuid = () => {
+    const newUuid = 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
       const r = (Math.random() * 16) | 0;
       const v = c === 'x' ? r : (r & 0x3) | 0x8;
       return v.toString(16);
     });
-    setUuid(newId);
+    setUuid(newUuid);
   };
 
-  const copyToClipboard = (text: string, setCopied: (v: boolean) => void) => {
-    navigator.clipboard.writeText(text);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
+  const getBase64Output = () => {
+    try {
+      if (base64Mode === 'encode') {
+        return btoa(unescape(encodeURIComponent(base64Input)));
+      } else {
+        return decodeURIComponent(escape(atob(base64Input)));
+      }
+    } catch (e) {
+      return language === 'tr' ? '[Geçersiz Base64 Girişi]' : '[Invalid Base64 Input]';
+    }
   };
 
-  // Convert cases
-  const toCamel = (str: string) =>
-    str.toLowerCase().replace(/[^a-zA-Z0-9]+(.)/g, (_, chr) => chr.toUpperCase());
-  const toKebab = (str: string) =>
-    str.toLowerCase().replace(/\s+/g, '-').replace(/[^a-zA-Z0-9-]/g, '');
-  const toSnake = (str: string) =>
-    str.toLowerCase().replace(/\s+/g, '_').replace(/[^a-zA-Z0-9_]/g, '');
-  const toPascal = (str: string) => {
-    const camel = toCamel(str);
-    return camel.charAt(0).toUpperCase() + camel.slice(1);
-  };
+  const toCamelCase = (str: string) =>
+    str.replace(/[-_]([a-z])/g, (g) => g[1].toUpperCase());
+  const toKebabCase = (str: string) =>
+    str.replace(/([a-z])([A-Z])/g, '$1-$2').replace(/[\s_]+/g, '-').toLowerCase();
+  const toSnakeCase = (str: string) =>
+    str.replace(/([a-z])([A-Z])/g, '$1_$2').replace(/[\s-]+/g, '_').toLowerCase();
 
-  // Format JSON
   const handleFormatJson = () => {
     try {
-      const parsed = JSON.parse(rawJson);
+      const parsed = JSON.parse(jsonInput);
       setFormattedJson(JSON.stringify(parsed, null, 2));
       setJsonError(null);
     } catch (err: any) {
-      setJsonError(err.message || 'Geçersiz JSON');
+      setJsonError(err.message);
     }
   };
 
   return (
-    <div className="bg-white dark:bg-neutral-900 rounded-3xl p-6 sm:p-8 border border-zinc-200 dark:border-neutral-800 shadow-sm space-y-6">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <span className="text-xs font-bold text-zinc-500 dark:text-neutral-500 uppercase tracking-widest flex items-center gap-1.5 mb-1">
-            <Wrench className="w-3.5 h-3.5 text-emerald-500" />
-            Developer Utilities Bento
-          </span>
-          <h3 className="text-lg sm:text-xl font-bold text-zinc-900 dark:text-white">
-            Geliştirici Araçları & Sandbox Testleri
-          </h3>
-        </div>
-
-        <span className="text-[10px] font-mono font-semibold uppercase bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 px-3 py-1 rounded-full">
-          Bento Kit
+    <div className="space-y-6">
+      {/* Top Header */}
+      <div className="bg-white dark:bg-neutral-900 rounded-3xl p-6 sm:p-8 border border-zinc-200 dark:border-neutral-800 shadow-sm">
+        <span className="text-xs font-bold text-zinc-500 dark:text-neutral-500 uppercase tracking-widest flex items-center gap-1.5 mb-1">
+          <Terminal className="w-3.5 h-3.5 text-emerald-500" />
+          {t('tools.badge')}
         </span>
+        <h2 className="text-xl sm:text-2xl font-bold text-zinc-900 dark:text-white">
+          {t('tools.title')}
+        </h2>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-        {/* 1. UUID & Token Generator Bento Card */}
-        <div className="bg-zinc-50 dark:bg-neutral-950 p-5 rounded-3xl border border-zinc-200 dark:border-neutral-800 flex flex-col justify-between">
+      {/* Grid of Tools */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+        {/* 1. UUID Generator */}
+        <div className="bg-white dark:bg-neutral-900 rounded-3xl p-6 border border-zinc-200 dark:border-neutral-800 shadow-sm flex flex-col justify-between">
           <div>
-            <div className="flex items-center justify-between mb-2">
+            <div className="flex items-center justify-between mb-3">
               <span className="text-xs font-bold text-zinc-500 dark:text-neutral-500 uppercase tracking-wider flex items-center gap-1.5">
-                <Hash className="w-3.5 h-3.5 text-emerald-500" />
-                UUID / Token Üretici
+                <Key className="w-3.5 h-3.5 text-emerald-500" />
+                {t('tools.uuidTitle')}
               </span>
               <button
-                onClick={handleGenerateUuid}
-                className="text-[11px] text-emerald-600 dark:text-emerald-400 hover:underline flex items-center gap-1 font-bold"
+                onClick={generateUuid}
+                className="text-[11px] font-mono text-emerald-600 dark:text-emerald-400 hover:underline flex items-center gap-1 font-bold cursor-pointer"
               >
-                <RefreshCw className="w-3 h-3" /> Yeni Üret
+                <Sparkles className="w-3 h-3" /> {t('tools.generateNew')}
               </button>
             </div>
 
-            <div className="bg-white dark:bg-neutral-900 p-3.5 rounded-2xl border border-zinc-200 dark:border-neutral-800 flex items-center justify-between gap-2 mt-3 font-mono text-xs text-zinc-900 dark:text-white select-all">
+            <div className="p-3 bg-zinc-50 dark:bg-neutral-950 rounded-2xl border border-zinc-200 dark:border-neutral-800 flex items-center justify-between gap-2 font-mono text-xs text-zinc-900 dark:text-white">
               <span className="truncate">{uuid}</span>
               <button
-                onClick={() => copyToClipboard(uuid, setCopiedUuid)}
-                className="p-1.5 text-zinc-500 hover:text-zinc-900 dark:text-neutral-400 dark:hover:text-white rounded-lg hover:bg-zinc-100 dark:hover:bg-neutral-800 flex-shrink-0"
-                title="Kopyala"
+                onClick={() => copyToClipboard(uuid, 'uuid')}
+                className="p-1.5 hover:bg-zinc-200 dark:hover:bg-neutral-800 rounded-lg text-zinc-500 transition-colors cursor-pointer"
               >
-                {copiedUuid ? (
-                  <Check className="w-4 h-4 text-emerald-500" />
+                {copiedId === 'uuid' ? (
+                  <Check className="w-3.5 h-3.5 text-emerald-500" />
                 ) : (
-                  <Copy className="w-4 h-4" />
+                  <Copy className="w-3.5 h-3.5" />
                 )}
               </button>
             </div>
           </div>
-          <p className="text-[10px] font-mono text-zinc-400 dark:text-neutral-500 mt-3">
-            RFC 4122 standardında v4 rastgele benzersiz ID
+
+          <p className="text-[10px] font-mono text-zinc-400 dark:text-neutral-500 mt-4">
+            {t('tools.uuidSub')}
           </p>
         </div>
 
-        {/* 2. Text Case Converter Bento Card */}
-        <div className="bg-zinc-50 dark:bg-neutral-950 p-5 rounded-3xl border border-zinc-200 dark:border-neutral-800">
-          <span className="text-xs font-bold text-zinc-500 dark:text-neutral-500 uppercase tracking-wider flex items-center gap-1.5 mb-2">
-            <Sparkles className="w-3.5 h-3.5 text-emerald-500" />
-            Metin Dönüştürücü
-          </span>
+        {/* 2. Base64 Converter */}
+        <div className="bg-white dark:bg-neutral-900 rounded-3xl p-6 border border-zinc-200 dark:border-neutral-800 shadow-sm flex flex-col justify-between">
+          <div>
+            <div className="flex items-center justify-between mb-3">
+              <span className="text-xs font-bold text-zinc-500 dark:text-neutral-500 uppercase tracking-wider flex items-center gap-1.5">
+                <ArrowRightLeft className="w-3.5 h-3.5 text-cyan-500" />
+                {t('tools.base64Title')}
+              </span>
+              <div className="flex bg-zinc-100 dark:bg-neutral-800 rounded-lg p-0.5 text-[10px] font-mono">
+                <button
+                  onClick={() => setBase64Mode('encode')}
+                  className={`px-2 py-0.5 rounded-md cursor-pointer ${
+                    base64Mode === 'encode'
+                      ? 'bg-white dark:bg-neutral-700 font-bold text-zinc-900 dark:text-white shadow-xs'
+                      : 'text-zinc-500 dark:text-neutral-400'
+                  }`}
+                >
+                  Encode
+                </button>
+                <button
+                  onClick={() => setBase64Mode('decode')}
+                  className={`px-2 py-0.5 rounded-md cursor-pointer ${
+                    base64Mode === 'decode'
+                      ? 'bg-white dark:bg-neutral-700 font-bold text-zinc-900 dark:text-white shadow-xs'
+                      : 'text-zinc-500 dark:text-neutral-400'
+                  }`}
+                >
+                  Decode
+                </button>
+              </div>
+            </div>
 
-          <input
-            type="text"
-            value={inputText}
-            onChange={(e) => setInputText(e.target.value)}
-            placeholder="Bir metin girin..."
-            className="w-full px-3.5 py-2 text-xs bg-white dark:bg-neutral-900 border border-zinc-200 dark:border-neutral-800 rounded-xl text-zinc-900 dark:text-white focus:outline-none focus:border-emerald-500 dark:focus:border-emerald-500 mb-3"
-          />
+            <input
+              type="text"
+              value={base64Input}
+              onChange={(e) => setBase64Input(e.target.value)}
+              placeholder={t('tools.base64Placeholder')}
+              className="w-full mb-2 px-3 py-2 text-xs bg-zinc-50 dark:bg-neutral-950 border border-zinc-200 dark:border-neutral-800 rounded-xl text-zinc-900 dark:text-white placeholder-zinc-400 dark:placeholder-neutral-500 focus:outline-none"
+            />
 
-          <div className="grid grid-cols-2 gap-2 text-xs font-mono">
-            <div className="p-2.5 bg-white dark:bg-neutral-900 rounded-xl border border-zinc-200 dark:border-neutral-800">
-              <span className="text-[10px] text-zinc-400 dark:text-neutral-500 block mb-0.5 font-bold">camelCase:</span>
-              <span className="text-zinc-800 dark:text-neutral-200 font-bold truncate block">
-                {toCamel(inputText) || '-'}
-              </span>
+            <div className="p-2.5 bg-zinc-50 dark:bg-neutral-950 rounded-xl border border-zinc-200 dark:border-neutral-800 flex items-center justify-between gap-2 font-mono text-xs text-cyan-600 dark:text-cyan-400 truncate">
+              <span className="truncate">{getBase64Output()}</span>
+              <button
+                onClick={() => copyToClipboard(getBase64Output(), 'base64')}
+                className="p-1 hover:bg-zinc-200 dark:hover:bg-neutral-800 rounded text-zinc-500 cursor-pointer"
+              >
+                {copiedId === 'base64' ? (
+                  <Check className="w-3.5 h-3.5 text-emerald-500" />
+                ) : (
+                  <Copy className="w-3.5 h-3.5" />
+                )}
+              </button>
             </div>
-            <div className="p-2.5 bg-white dark:bg-neutral-900 rounded-xl border border-zinc-200 dark:border-neutral-800">
-              <span className="text-[10px] text-zinc-400 dark:text-neutral-500 block mb-0.5 font-bold">kebab-case:</span>
-              <span className="text-zinc-800 dark:text-neutral-200 font-bold truncate block">
-                {toKebab(inputText) || '-'}
-              </span>
-            </div>
-            <div className="p-2.5 bg-white dark:bg-neutral-900 rounded-xl border border-zinc-200 dark:border-neutral-800">
-              <span className="text-[10px] text-zinc-400 dark:text-neutral-500 block mb-0.5 font-bold">PascalCase:</span>
-              <span className="text-zinc-800 dark:text-neutral-200 font-bold truncate block">
-                {toPascal(inputText) || '-'}
-              </span>
-            </div>
-            <div className="p-2.5 bg-white dark:bg-neutral-900 rounded-xl border border-zinc-200 dark:border-neutral-800">
-              <span className="text-[10px] text-zinc-400 dark:text-neutral-500 block mb-0.5 font-bold">snake_case:</span>
-              <span className="text-zinc-800 dark:text-neutral-200 font-bold truncate block">
-                {toSnake(inputText) || '-'}
-              </span>
+          </div>
+
+          <p className="text-[10px] font-mono text-zinc-400 dark:text-neutral-500 mt-4">
+            {t('tools.base64Sub')}
+          </p>
+        </div>
+
+        {/* 3. Text Case Formatter */}
+        <div className="bg-white dark:bg-neutral-900 rounded-3xl p-6 border border-zinc-200 dark:border-neutral-800 shadow-sm flex flex-col justify-between">
+          <div>
+            <span className="text-xs font-bold text-zinc-500 dark:text-neutral-500 uppercase tracking-wider flex items-center gap-1.5 mb-3">
+              <Hash className="w-3.5 h-3.5 text-purple-500" />
+              {t('tools.caseTitle')}
+            </span>
+
+            <input
+              type="text"
+              value={caseInput}
+              onChange={(e) => setCaseInput(e.target.value)}
+              placeholder={t('tools.casePlaceholder')}
+              className="w-full mb-2 px-3 py-2 text-xs bg-zinc-50 dark:bg-neutral-950 border border-zinc-200 dark:border-neutral-800 rounded-xl text-zinc-900 dark:text-white placeholder-zinc-400 dark:placeholder-neutral-500 focus:outline-none"
+            />
+
+            <div className="space-y-1.5 font-mono text-[11px]">
+              <div className="flex justify-between items-center bg-zinc-50 dark:bg-neutral-950 px-2.5 py-1 rounded-lg border border-zinc-200 dark:border-neutral-800">
+                <span className="text-zinc-400">camelCase:</span>
+                <span className="text-emerald-500 font-bold">{toCamelCase(caseInput)}</span>
+              </div>
+              <div className="flex justify-between items-center bg-zinc-50 dark:bg-neutral-950 px-2.5 py-1 rounded-lg border border-zinc-200 dark:border-neutral-800">
+                <span className="text-zinc-400">kebab-case:</span>
+                <span className="text-cyan-400 font-bold">{toKebabCase(caseInput)}</span>
+              </div>
+              <div className="flex justify-between items-center bg-zinc-50 dark:bg-neutral-950 px-2.5 py-1 rounded-lg border border-zinc-200 dark:border-neutral-800">
+                <span className="text-zinc-400">snake_case:</span>
+                <span className="text-amber-400 font-bold">{toSnakeCase(caseInput)}</span>
+              </div>
             </div>
           </div>
         </div>
 
-        {/* 3. JSON Formatter Bento Card */}
-        <div className="md:col-span-2 bg-zinc-50 dark:bg-neutral-950 p-5 rounded-3xl border border-zinc-200 dark:border-neutral-800 space-y-3">
+        {/* 4. Large JSON Formatter Bento (2 cols) */}
+        <div className="md:col-span-2 bg-white dark:bg-neutral-900 rounded-3xl p-6 border border-zinc-200 dark:border-neutral-800 shadow-sm space-y-4">
           <div className="flex items-center justify-between">
             <span className="text-xs font-bold text-zinc-500 dark:text-neutral-500 uppercase tracking-wider flex items-center gap-1.5">
-              <Code className="w-3.5 h-3.5 text-emerald-500" />
-              JSON Biçimlendirici & Doğrulayıcı
+              <Braces className="w-3.5 h-3.5 text-emerald-500" />
+              {t('tools.jsonTitle')}
             </span>
             <button
               onClick={handleFormatJson}
-              className="px-4 py-1.5 bg-emerald-500 hover:bg-emerald-400 text-neutral-950 text-xs font-bold rounded-full transition-all active:scale-95 cursor-pointer shadow-xs"
+              className="px-3 py-1 bg-emerald-500 hover:bg-emerald-400 text-neutral-950 rounded-full font-bold text-xs flex items-center gap-1 cursor-pointer transition-all shadow-xs"
             >
-              Doğrula & Formatla
+              <Sparkles className="w-3 h-3" />
+              <span>{t('tools.jsonFormat')}</span>
             </button>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <textarea
-              rows={4}
-              value={rawJson}
-              onChange={(e) => setRawJson(e.target.value)}
-              placeholder="JSON metni yapıştırın..."
-              className="w-full p-3 text-xs font-mono bg-white dark:bg-neutral-900 border border-zinc-200 dark:border-neutral-800 rounded-2xl text-zinc-900 dark:text-white focus:outline-none focus:border-emerald-500 resize-none leading-relaxed"
+              rows={5}
+              value={jsonInput}
+              onChange={(e) => setJsonInput(e.target.value)}
+              className="w-full p-3 font-mono text-xs bg-zinc-50 dark:bg-neutral-950 border border-zinc-200 dark:border-neutral-800 rounded-2xl text-zinc-900 dark:text-white focus:outline-none resize-none"
             />
-
-            <div className="bg-neutral-950 p-3 rounded-2xl border border-neutral-800 text-xs font-mono text-emerald-400 overflow-y-auto max-h-[120px] shadow-inner">
+            <div className="relative p-3 font-mono text-xs bg-neutral-950 border border-neutral-800 rounded-2xl text-emerald-400 overflow-y-auto max-h-[140px]">
               {jsonError ? (
                 <span className="text-rose-400">{jsonError}</span>
               ) : formattedJson ? (
                 <pre>{formattedJson}</pre>
               ) : (
-                <span className="text-neutral-500">// Formatlanmış JSON burada görüntülenecektir</span>
+                <span className="text-neutral-600">{t('tools.jsonSub')}</span>
               )}
+            </div>
+          </div>
+        </div>
+
+        {/* 5. Next.js 15 Config Generator */}
+        <div className="bg-white dark:bg-neutral-900 rounded-3xl p-6 border border-zinc-200 dark:border-neutral-800 shadow-sm flex flex-col justify-between">
+          <div>
+            <div className="flex items-center justify-between mb-3">
+              <span className="text-xs font-bold text-zinc-500 dark:text-neutral-500 uppercase tracking-wider flex items-center gap-1.5">
+                <FileCode className="w-3.5 h-3.5 text-emerald-500" />
+                {t('tools.nextConfigTitle')}
+              </span>
+              <button
+                onClick={() =>
+                  copyToClipboard(
+                    `/** @type {import('next').NextConfig} */\nconst nextConfig = {\n  experimental: {\n    ppr: true,\n    serverActions: {\n      bodySizeLimit: '4mb'\n    }\n  },\n  reactStrictMode: true,\n};\nexport default nextConfig;`,
+                    'config'
+                  )
+                }
+                className="text-[11px] font-mono text-zinc-500 dark:text-neutral-400 hover:text-emerald-500 flex items-center gap-1 cursor-pointer"
+              >
+                {copiedId === 'config' ? (
+                  <Check className="w-3 h-3 text-emerald-500" />
+                ) : (
+                  <Copy className="w-3 h-3" />
+                )}
+                <span>{t('tools.copy')}</span>
+              </button>
+            </div>
+
+            <div className="p-3 bg-neutral-950 rounded-2xl border border-neutral-800 text-[11px] font-mono text-emerald-400 overflow-x-auto">
+              <pre>{`/** @type {import('next').NextConfig} */
+const nextConfig = {
+  experimental: {
+    ppr: true,
+    serverActions: {
+      bodySizeLimit: '4mb'
+    }
+  },
+  reactStrictMode: true,
+};
+export default nextConfig;`}</pre>
             </div>
           </div>
         </div>

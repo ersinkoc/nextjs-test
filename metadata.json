@@ -1,6 +1,6 @@
 {
-  "name": "Deneme App",
-  "description": "Next.js tarzı modern ve etkileşimli deneme/playground uygulaması.",
+  "name": "Next.js Test Arena",
+  "description": "Comprehensive Next.js 15 & Node.js 22 LTS test arena with Bento Grid UI, Server Actions validation, Edge streaming, performance benchmarks, and dual language (TR/EN) support.",
   "requestFramePermissions": [],
   "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
 }

@@ -2,8 +2,11 @@ import React, { useState } from 'react';
 import { Terminal, Play, Server, RefreshCw, CheckCircle2, Code2, Clock, Activity, Cpu } from 'lucide-react';
 import { ApiLog } from '../types';
 import { motion, AnimatePresence } from 'motion/react';
+import { useI18n } from '../i18n';
 
 export const ApiSimulator: React.FC = () => {
+  const { t, language } = useI18n();
+
   const [selectedEndpoint, setSelectedEndpoint] = useState<'users' | 'server-action' | 'stream' | 'health'>('users');
   const [latency, setLatency] = useState<number>(300);
   const [isLoading, setIsLoading] = useState<boolean>(false);
@@ -11,7 +14,9 @@ export const ApiSimulator: React.FC = () => {
   const [streamChunks, setStreamChunks] = useState<string[]>([]);
   const [currentResponse, setCurrentResponse] = useState<any>({
     status: 200,
-    message: 'Test etmeye hazır. "İsteği Çalıştır" butonuna tıklayarak simülasyonu başlatın.',
+    message: language === 'tr' 
+      ? 'Test etmeye hazır. "İsteği Çalıştır" butonuna tıklayarak simülasyonu başlatın.' 
+      : 'Ready to test. Click "Execute Request" to launch the simulation.',
     data: null,
   });
   const [logs, setLogs] = useState<ApiLog[]>([
@@ -30,28 +35,28 @@ export const ApiSimulator: React.FC = () => {
     {
       id: 'users',
       name: 'GET /api/users',
-      desc: 'Next.js App Router Route Handler',
+      desc: language === 'tr' ? 'Next.js App Router Route Handler' : 'Next.js App Router Route Handler',
       method: 'GET' as const,
       type: 'Route Handler',
     },
     {
       id: 'server-action',
       name: 'POST createRecord()',
-      desc: 'Next.js Server Action ("use server")',
+      desc: language === 'tr' ? 'Next.js Server Action ("use server")' : 'Next.js Server Action ("use server")',
       method: 'POST' as const,
       type: 'Server Action',
     },
     {
       id: 'stream',
       name: 'GET /api/stream',
-      desc: 'Edge Runtime Streamed Response',
+      desc: language === 'tr' ? 'Edge Runtime Streamed Response' : 'Edge Runtime Streamed Response',
       method: 'GET' as const,
       type: 'Streaming API',
     },
     {
       id: 'health',
       name: 'GET /api/health',
-      desc: 'Sistem Durum & Latency Kontrolü',
+      desc: language === 'tr' ? 'Sistem Durum & Latency Kontrolü' : 'System Health & Latency Probe',
       method: 'GET' as const,
       type: 'Micro-Check',
     },
@@ -63,12 +68,18 @@ export const ApiSimulator: React.FC = () => {
     const startTime = performance.now();
 
     if (selectedEndpoint === 'stream') {
-      const chunks = [
+      const chunks = language === 'tr' ? [
         'Bağlantı kuruldu (HTTP/2 200 OK)...',
         'Model başlatılıyor -> Edge Node [fra1]...',
         'Veri akışı 1: Tokenler yükleniyor...',
         'Veri akışı 2: Analiz tamamlandı -> { status: "Success" }',
         'Stream tamamlandı.',
+      ] : [
+        'Connection established (HTTP/2 200 OK)...',
+        'Model initializing -> Edge Node [fra1]...',
+        'Data chunk 1: Tokens streaming in...',
+        'Data chunk 2: Analysis complete -> { status: "Success" }',
+        'Stream completed successfully.',
       ];
 
       for (let i = 0; i < chunks.length; i++) {
@@ -121,7 +132,7 @@ export const ApiSimulator: React.FC = () => {
           revalidatedPaths: ['/', '/dashboard'],
           createdRecord: {
             id: 'rec_' + Math.random().toString(36).substring(2, 8),
-            title: 'Yeni Deneme Kaydı',
+            title: language === 'tr' ? 'Yeni Deneme Kaydı' : 'New Experimental Record',
             serverExecutedAt: new Date().toISOString(),
             status: 'Persisted to DB',
           },
@@ -134,10 +145,11 @@ export const ApiSimulator: React.FC = () => {
         path = '/api/health';
         resPayload = {
           status: 'healthy',
-          uptime: '99.98%',
-          runtime: 'Node.js 20.x (Edge compatible)',
-          memoryUsage: { rss: '42MB', heapUsed: '18MB' },
-          env: 'development',
+          uptime: '99.99%',
+          runtime: 'Node.js 22 LTS (Active) & Edge compatible',
+          memoryUsage: { rss: '38MB', heapUsed: '16MB' },
+          framework: 'Next.js 15.2.0',
+          env: 'production',
         };
         break;
     }
@@ -222,6 +234,8 @@ export async function GET() {
 export async function GET() {
   return Response.json({
     status: 'healthy',
+    runtime: 'Node.js 22 LTS',
+    nextVersion: '15.2.0',
     timestamp: Date.now()
   });
 }`,
@@ -234,25 +248,25 @@ export async function GET() {
         <div>
           <span className="text-xs font-bold text-zinc-500 dark:text-neutral-500 uppercase tracking-widest flex items-center gap-1.5 mb-1">
             <Server className="w-3.5 h-3.5 text-emerald-500" />
-            Route Handler & Server Action Sandbox
+            {t('api.badge')}
           </span>
           <h3 className="text-lg sm:text-xl font-bold text-zinc-900 dark:text-white">
-            Next.js App Router API Runner
+            {t('api.title')}
           </h3>
         </div>
 
         <div className="flex flex-wrap items-center gap-2.5">
           <div className="flex items-center gap-1.5 bg-zinc-100 dark:bg-neutral-950 px-3 py-1.5 rounded-full border border-zinc-200 dark:border-neutral-800 text-xs">
             <Clock className="w-3.5 h-3.5 text-emerald-500" />
-            <span className="text-zinc-500 dark:text-neutral-400 text-[11px] font-mono">Gecikme:</span>
+            <span className="text-zinc-500 dark:text-neutral-400 text-[11px] font-mono">{t('api.latency')}:</span>
             <select
               value={latency}
               onChange={(e) => setLatency(Number(e.target.value))}
               className="bg-transparent font-mono text-zinc-900 dark:text-white text-xs font-bold focus:outline-none cursor-pointer"
             >
-              <option value={50} className="bg-white dark:bg-neutral-900">50ms (Hızlı)</option>
-              <option value={300} className="bg-white dark:bg-neutral-900">300ms (Standart)</option>
-              <option value={800} className="bg-white dark:bg-neutral-900">800ms (Yavaş 3G)</option>
+              <option value={50} className="bg-white dark:bg-neutral-900">{t('api.fast')}</option>
+              <option value={300} className="bg-white dark:bg-neutral-900">{t('api.standard')}</option>
+              <option value={800} className="bg-white dark:bg-neutral-900">{t('api.slow')}</option>
             </select>
           </div>
 
@@ -266,7 +280,7 @@ export async function GET() {
             ) : (
               <Play className="w-3.5 h-3.5 fill-current" />
             )}
-            <span>{isLoading ? 'Çalışıyor...' : 'İsteği Çalıştır'}</span>
+            <span>{isLoading ? t('api.executing') : t('api.execute')}</span>
           </button>
         </div>
       </div>
@@ -315,25 +329,25 @@ export async function GET() {
           <div className="flex items-center gap-2">
             <button
               onClick={() => setActiveView('response')}
-              className={`px-3 py-1 rounded-full transition-all flex items-center gap-1.5 font-medium ${
+              className={`px-3 py-1 rounded-full transition-all flex items-center gap-1.5 font-medium cursor-pointer ${
                 activeView === 'response'
                   ? 'bg-neutral-800 text-white font-bold'
                   : 'text-neutral-400 hover:text-white'
               }`}
             >
               <Activity className="w-3.5 h-3.5 text-emerald-400" />
-              <span>Yanıt Çıktısı (JSON)</span>
+              <span>{t('api.responseTab')}</span>
             </button>
             <button
               onClick={() => setActiveView('code')}
-              className={`px-3 py-1 rounded-full transition-all flex items-center gap-1.5 font-medium ${
+              className={`px-3 py-1 rounded-full transition-all flex items-center gap-1.5 font-medium cursor-pointer ${
                 activeView === 'code'
                   ? 'bg-neutral-800 text-white font-bold'
                   : 'text-neutral-400 hover:text-white'
               }`}
             >
               <Code2 className="w-3.5 h-3.5 text-cyan-400" />
-              <span>Next.js Kodu</span>
+              <span>{t('api.codeTab')}</span>
             </button>
           </div>
 
@@ -373,7 +387,7 @@ export async function GET() {
         <div className="flex items-center justify-between mb-2">
           <span className="text-xs font-bold text-zinc-500 dark:text-neutral-500 uppercase tracking-widest flex items-center gap-1.5">
             <Terminal className="w-3.5 h-3.5 text-emerald-500" />
-            İstek Kayıtları ({logs.length})
+            {t('api.requestLogs')} ({logs.length})
           </span>
           <span className="text-[10px] font-mono text-zinc-400 dark:text-neutral-500">Live Telemetry</span>
         </div>
