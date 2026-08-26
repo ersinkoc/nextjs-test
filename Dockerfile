@@ -8,14 +8,11 @@ FROM node:24-alpine AS builder
 
 WORKDIR /app
 
-# Set node environment for build
-ENV NODE_ENV=production
-
 # Copy dependency manifests
-COPY package.json package-lock.json* ./
+COPY package*.json ./
 
-# Install all dependencies (including devDependencies needed for Vite & TypeScript build)
-RUN npm ci
+# Install all dependencies reliably across environments (ensuring devDependencies and target platform binaries are installed)
+RUN npm install --no-audit
 
 # Copy source code and configuration files
 COPY . .
