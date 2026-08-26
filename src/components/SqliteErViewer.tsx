@@ -26,7 +26,9 @@ import {
   ShieldAlert,
   Zap,
   Grid,
-  Activity
+  Activity,
+  Scan,
+  RotateCcw
 } from 'lucide-react';
 import { useI18n } from '../i18n';
 import { motion, AnimatePresence } from 'motion/react';
@@ -210,10 +212,10 @@ export const SqliteErViewer: React.FC<SqliteErViewerProps> = ({
     }
 
     const nodeList: ERNode[] = schema.tables.map((tbl, idx) => {
-      // Calculate node card height based on column count (base header 50px + 28px per column + footer 32px)
+      // Calculate node card height based on column count (base header 48px + 24px per column + footer 30px)
       const columnCount = tbl.columns.length;
-      const height = Math.min(Math.max(120, 60 + columnCount * 28 + 36), 380);
-      const width = 280;
+      const height = Math.min(Math.max(120, 52 + columnCount * 25 + 32), 300);
+      const width = 250;
 
       return {
         id: tbl.name,
@@ -352,14 +354,15 @@ export const SqliteErViewer: React.FC<SqliteErViewerProps> = ({
 
     // Apply layout positions according to mode
     if (layoutMode === 'grid') {
-      const cols = Math.max(1, Math.floor(Math.sqrt(nodes.length * 1.5)));
-      const xSpacing = 340;
-      const ySpacing = 320;
+      const count = nodes.length;
+      const cols = count <= 2 ? count : count <= 4 ? 2 : count <= 9 ? 3 : 4;
+      const xSpacing = 280;
+      const ySpacing = 260;
       nodes.forEach((node, i) => {
         const col = i % cols;
         const row = Math.floor(i / cols);
-        node.fx = col * xSpacing + 80;
-        node.fy = row * ySpacing + 80;
+        node.fx = col * xSpacing + 140;
+        node.fy = row * ySpacing + 130;
         node.x = node.fx;
         node.y = node.fy;
       });
@@ -386,13 +389,13 @@ export const SqliteErViewer: React.FC<SqliteErViewerProps> = ({
       const layer2 = nodes.filter((n) => (inDegree.get(n.id) || 0) === 0);
 
       const layers = [layer0, layer1, layer2].filter((l) => l.length > 0);
-      const yGap = 360;
-      const xGap = 340;
+      const yGap = 280;
+      const xGap = 280;
 
       layers.forEach((layer, layerIdx) => {
         layer.forEach((node, nodeIdx) => {
-          node.fx = nodeIdx * xGap + 80;
-          node.fy = layerIdx * yGap + 80;
+          node.fx = nodeIdx * xGap + 140;
+          node.fy = layerIdx * yGap + 130;
           node.x = node.fx;
           node.y = node.fy;
         });
@@ -685,6 +688,52 @@ export const SqliteErViewer: React.FC<SqliteErViewerProps> = ({
       nodeElements.attr('transform', (d) => `translate(${d.x || 0}, ${d.y || 0})`);
     };
 
+    // Auto fit graph to canvas container bounds
+    const computeAndApplyFit = (animate = false) => {
+      if (!svgRef.current || !containerRef.current || nodes.length === 0) return;
+      const cWidth = containerRef.current.clientWidth || 900;
+      const cHeight = containerRef.current.clientHeight || 640;
+
+      let minX = Infinity;
+      let maxX = -Infinity;
+      let minY = Infinity;
+      let maxY = -Infinity;
+
+      nodes.forEach((n) => {
+        const nx = n.x ?? n.fx ?? 0;
+        const ny = n.y ?? n.fy ?? 0;
+        const nw = n.width || 250;
+        const nh = n.height || 220;
+        minX = Math.min(minX, nx - nw / 2);
+        maxX = Math.max(maxX, nx + nw / 2);
+        minY = Math.min(minY, ny - nh / 2);
+        maxY = Math.max(maxY, ny + nh / 2);
+      });
+
+      if (!isFinite(minX) || !isFinite(maxX) || !isFinite(minY) || !isFinite(maxY)) return;
+
+      const padding = 48;
+      const graphW = Math.max(maxX - minX + padding * 2, 200);
+      const graphH = Math.max(maxY - minY + padding * 2, 200);
+
+      const scale = Math.min(
+        Math.max(0.25, Math.min(cWidth / graphW, cHeight / graphH)),
+        1.05
+      );
+
+      const centerX = (minX + maxX) / 2;
+      const centerY = (minY + maxY) / 2;
+      const tx = cWidth / 2 - centerX * scale;
+      const ty = cHeight / 2 - centerY * scale;
+
+      const transform = d3.zoomIdentity.translate(tx, ty).scale(scale);
+      if (animate) {
+        svg.transition().duration(350).call(zoom.transform, transform);
+      } else {
+        svg.call(zoom.transform, transform);
+      }
+    };
+
     // Initialize D3 Force Simulation if in Force mode
     if (layoutMode === 'force') {
       const simulation = d3
@@ -694,25 +743,27 @@ export const SqliteErViewer: React.FC<SqliteErViewerProps> = ({
           d3
             .forceLink<ERNode, ERLink>(links)
             .id((d) => d.id)
-            .distance(380)
+            .distance(240)
         )
-        .force('charge', d3.forceManyBody().strength(-1200))
+        .force('charge', d3.forceManyBody().strength(-500))
         .force('center', d3.forceCenter(width / 2, height / 2))
         .force(
           'collide',
-          d3.forceCollide<ERNode>().radius((d) => Math.max(d.width, d.height) * 0.8)
+          d3.forceCollide<ERNode>().radius(150)
         )
-        .on('tick', ticked);
+        .on('tick', ticked)
+        .on('end', () => {
+          computeAndApplyFit(true);
+        });
 
       simulationRef.current = simulation;
+      // Also trigger initial fit after a few ticks
+      setTimeout(() => computeAndApplyFit(false), 250);
     } else {
-      // In grid or hierarchical mode, run one synchronous tick
+      // In grid or hierarchical mode, run one synchronous tick and auto-fit to screen
       ticked();
+      computeAndApplyFit(false);
     }
-
-    // Initial Zoom Fit
-    const initialTransform = d3.zoomIdentity.translate(40, 40).scale(0.85);
-    svg.call(zoom.transform, initialTransform);
 
     return () => {
       if (simulationRef.current) {
@@ -721,7 +772,58 @@ export const SqliteErViewer: React.FC<SqliteErViewerProps> = ({
     };
   }, [nodes, links, layoutMode, filteredTableNames, selectedTable]);
 
-  // Zoom Helpers
+  // Viewport Auto-fit & Zoom Helpers
+  const handleFitToScreen = useCallback(() => {
+    if (!svgRef.current || !containerRef.current || nodes.length === 0 || !zoomBehaviorRef.current) return;
+    const cWidth = containerRef.current.clientWidth || 900;
+    const cHeight = containerRef.current.clientHeight || 640;
+
+    let minX = Infinity;
+    let maxX = -Infinity;
+    let minY = Infinity;
+    let maxY = -Infinity;
+
+    nodes.forEach((n) => {
+      const nx = n.x ?? n.fx ?? 0;
+      const ny = n.y ?? n.fy ?? 0;
+      const nw = n.width || 250;
+      const nh = n.height || 220;
+      minX = Math.min(minX, nx - nw / 2);
+      maxX = Math.max(maxX, nx + nw / 2);
+      minY = Math.min(minY, ny - nh / 2);
+      maxY = Math.max(maxY, ny + nh / 2);
+    });
+
+    if (!isFinite(minX) || !isFinite(maxX) || !isFinite(minY) || !isFinite(maxY)) return;
+
+    const padding = 48;
+    const graphW = Math.max(maxX - minX + padding * 2, 200);
+    const graphH = Math.max(maxY - minY + padding * 2, 200);
+
+    const scale = Math.min(
+      Math.max(0.25, Math.min(cWidth / graphW, cHeight / graphH)),
+      1.05
+    );
+
+    const centerX = (minX + maxX) / 2;
+    const centerY = (minY + maxY) / 2;
+    const tx = cWidth / 2 - centerX * scale;
+    const ty = cHeight / 2 - centerY * scale;
+
+    const transform = d3.zoomIdentity.translate(tx, ty).scale(scale);
+    d3.select(svgRef.current).transition().duration(400).call(zoomBehaviorRef.current.transform, transform);
+  }, [nodes]);
+
+  // Handle Container Resizing to automatically fit graph
+  useEffect(() => {
+    if (!containerRef.current) return;
+    const observer = new ResizeObserver(() => {
+      handleFitToScreen();
+    });
+    observer.observe(containerRef.current);
+    return () => observer.disconnect();
+  }, [handleFitToScreen]);
+
   const handleZoomIn = () => {
     if (!svgRef.current || !zoomBehaviorRef.current) return;
     d3.select(svgRef.current).transition().duration(250).call(zoomBehaviorRef.current.scaleBy, 1.25);
@@ -734,8 +836,7 @@ export const SqliteErViewer: React.FC<SqliteErViewerProps> = ({
 
   const handleResetZoom = () => {
     if (!svgRef.current || !zoomBehaviorRef.current) return;
-    const initialTransform = d3.zoomIdentity.translate(40, 40).scale(0.85);
-    d3.select(svgRef.current).transition().duration(350).call(zoomBehaviorRef.current.transform, initialTransform);
+    handleFitToScreen();
   };
 
   return (
@@ -911,12 +1012,21 @@ export const SqliteErViewer: React.FC<SqliteErViewerProps> = ({
               </button>
               <div className="w-[1px] h-4 bg-zinc-800" />
               <button
+                id="er-fit-screen-btn"
+                onClick={handleFitToScreen}
+                className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 text-xs font-mono font-medium transition-colors cursor-pointer"
+                title={t('sqlite.fitToScreen')}
+              >
+                <Scan size={14} />
+                <span className="hidden sm:inline text-[11px]">{t('sqlite.fitToScreen')}</span>
+              </button>
+              <button
                 id="er-zoom-reset-btn"
                 onClick={handleResetZoom}
                 className="p-2 rounded-xl hover:bg-zinc-800 text-zinc-300 hover:text-white transition-colors cursor-pointer"
                 title={t('sqlite.resetZoom')}
               >
-                <Maximize2 size={15} />
+                <RotateCcw size={14} />
               </button>
             </div>
 

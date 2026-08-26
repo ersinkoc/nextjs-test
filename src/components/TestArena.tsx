@@ -388,6 +388,27 @@ export default async function UserProfile({ params }: { params: { id: string } }
     const execTime = Math.floor(Math.random() * 25) + 8;
     await new Promise((resolve) => setTimeout(resolve, 350 + execTime * 5));
 
+    // Emit live WebSocket telemetry broadcast for the test arena
+    try {
+      fetch('/api/ws/broadcast', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          channel: 'arena:events',
+          eventName: 'arena:test-executed',
+          payload: {
+            testId,
+            testName: targetTest?.name,
+            category: targetTest?.category,
+            executionTimeMs: execTime,
+            assertionsCount: targetTest?.assertions.length,
+            status: 'passed',
+            timestamp: new Date().toISOString(),
+          },
+        }),
+      }).catch(() => {});
+    } catch (e) {}
+
     setTests((prev) =>
       prev.map((t) =>
         t.id === testId

@@ -20,7 +20,12 @@ import {
   Layers,
   Sparkles,
   Compass,
-  Command
+  Command,
+  Container,
+  Send,
+  Shuffle,
+  Gauge,
+  Radio
 } from 'lucide-react';
 import { ActiveTab } from '../types';
 import { useI18n } from '../i18n';
@@ -78,6 +83,14 @@ export const BreadcrumbBar: React.FC<BreadcrumbBarProps> = ({
           routeSlug: 'overview',
         },
         {
+          id: 'docker-cockpit',
+          labelKey: 'nav.dockerCockpit',
+          icon: Container,
+          badge: 'Docker',
+          badgeColor: 'bg-cyan-500/10 text-cyan-600 dark:text-cyan-400 border-cyan-500/20',
+          routeSlug: 'docker-cockpit',
+        },
+        {
           id: 'api-simulator',
           labelKey: 'nav.apiSimulator',
           icon: Terminal,
@@ -103,6 +116,22 @@ export const BreadcrumbBar: React.FC<BreadcrumbBarProps> = ({
           routeSlug: 'test-arena',
         },
         {
+          id: 'ws-monitor',
+          labelKey: 'nav.wsMonitor',
+          icon: Radio,
+          badge: 'Live WS',
+          badgeColor: 'bg-cyan-500/10 text-cyan-600 dark:text-cyan-400 border-cyan-500/20',
+          routeSlug: 'ws-monitor',
+        },
+        {
+          id: 'stress-lab',
+          labelKey: 'nav.stressLab',
+          icon: Gauge,
+          badge: 'Charts',
+          badgeColor: 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20',
+          routeSlug: 'stress-lab',
+        },
+        {
           id: 'performance-lab',
           labelKey: 'nav.performanceLab',
           icon: Activity,
@@ -119,6 +148,22 @@ export const BreadcrumbBar: React.FC<BreadcrumbBarProps> = ({
       icon: Zap,
       color: 'text-indigo-500 bg-indigo-500/10 border-indigo-500/20',
       items: [
+        {
+          id: 'server-actions-lab',
+          labelKey: 'nav.serverActionsLab',
+          icon: Send,
+          badge: 'use server',
+          badgeColor: 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20',
+          routeSlug: 'server-actions-lab',
+        },
+        {
+          id: 'middleware-inspector',
+          labelKey: 'nav.middlewareInspector',
+          icon: Shuffle,
+          badge: 'Edge',
+          badgeColor: 'bg-sky-500/10 text-sky-600 dark:text-sky-400 border-sky-500/20',
+          routeSlug: 'middleware-inspector',
+        },
         {
           id: 'edge-sandbox',
           labelKey: 'nav.edgeSandbox',

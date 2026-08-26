@@ -40,6 +40,7 @@ import { useI18n } from '../i18n';
 import { motion, AnimatePresence } from 'motion/react';
 import { SqliteErViewer } from './SqliteErViewer';
 import { SqliteSchemaModifier } from './SqliteSchemaModifier';
+import { SqlCodeEditor } from './SqlCodeEditor';
 
 interface TableDetail {
   name: string;
@@ -753,25 +754,19 @@ export const SqliteStudio: React.FC = () => {
                 </div>
               </div>
 
-              {/* SQL Textarea */}
-              <div className="relative rounded-2xl bg-zinc-950 border border-zinc-800 p-3 shadow-inner">
-                <textarea
-                  value={sqlInput}
-                  onChange={(e) => setSqlInput(e.target.value)}
-                  onKeyDown={(e) => {
-                    if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
-                      e.preventDefault();
-                      handleExecuteSql();
-                    }
-                  }}
-                  rows={4}
-                  placeholder={t('sqlite.queryPlaceholder')}
-                  className="w-full bg-transparent text-emerald-400 font-mono text-xs focus:outline-none resize-none leading-relaxed"
-                />
-                <span className="absolute right-3 bottom-2 text-[10px] font-mono text-zinc-600">
-                  Press Ctrl + Enter to execute
-                </span>
-              </div>
+              {/* Interactive SQL Syntax Highlighting Code Editor */}
+              <SqlCodeEditor
+                value={sqlInput}
+                onChange={setSqlInput}
+                onExecute={() => handleExecuteSql()}
+                isExecuting={isExecuting}
+                placeholder={t('sqlite.queryPlaceholder')}
+                minHeight="160px"
+                maxHeight="320px"
+                showLineNumbers={true}
+                showSnippetBar={true}
+                showStatusBar={true}
+              />
 
               {/* Controls */}
               <div className="flex items-center justify-between gap-3 flex-wrap">

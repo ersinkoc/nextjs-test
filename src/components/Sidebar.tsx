@@ -17,7 +17,12 @@ import {
   Layers,
   Database,
   Share2,
-  HardDrive
+  HardDrive,
+  Container,
+  Send,
+  Shuffle,
+  Gauge,
+  Radio
 } from 'lucide-react';
 import { ActiveTab } from '../types';
 import { useI18n } from '../i18n';
@@ -50,6 +55,13 @@ export const Sidebar: React.FC<SidebarProps> = ({
           badgeColor: 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20',
         },
         {
+          id: 'docker-cockpit' as ActiveTab,
+          labelKey: 'nav.dockerCockpit',
+          icon: Container,
+          badge: 'Docker',
+          badgeColor: 'bg-cyan-500/10 text-cyan-600 dark:text-cyan-400 border-cyan-500/20',
+        },
+        {
           id: 'api-simulator' as ActiveTab,
           labelKey: 'nav.apiSimulator',
           icon: Terminal,
@@ -69,6 +81,20 @@ export const Sidebar: React.FC<SidebarProps> = ({
           badgeColor: 'bg-rose-500/10 text-rose-600 dark:text-rose-400 border-rose-500/20',
         },
         {
+          id: 'ws-monitor' as ActiveTab,
+          labelKey: 'nav.wsMonitor',
+          icon: Radio,
+          badge: 'Live WS',
+          badgeColor: 'bg-cyan-500/10 text-cyan-600 dark:text-cyan-400 border-cyan-500/20',
+        },
+        {
+          id: 'stress-lab' as ActiveTab,
+          labelKey: 'nav.stressLab',
+          icon: Gauge,
+          badge: 'Charts',
+          badgeColor: 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20',
+        },
+        {
           id: 'performance-lab' as ActiveTab,
           labelKey: 'nav.performanceLab',
           icon: Activity,
@@ -80,6 +106,20 @@ export const Sidebar: React.FC<SidebarProps> = ({
     {
       groupKey: 'nav.group.runtime',
       items: [
+        {
+          id: 'server-actions-lab' as ActiveTab,
+          labelKey: 'nav.serverActionsLab',
+          icon: Zap,
+          badge: 'use server',
+          badgeColor: 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20',
+        },
+        {
+          id: 'middleware-inspector' as ActiveTab,
+          labelKey: 'nav.middlewareInspector',
+          icon: Shuffle,
+          badge: 'Edge',
+          badgeColor: 'bg-sky-500/10 text-sky-600 dark:text-sky-400 border-sky-500/20',
+        },
         {
           id: 'edge-sandbox' as ActiveTab,
           labelKey: 'nav.edgeSandbox',

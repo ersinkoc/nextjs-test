@@ -8,12 +8,17 @@ import { QuickNotes } from './components/QuickNotes';
 import { ApiSimulator } from './components/ApiSimulator';
 import { DeveloperTools } from './components/DeveloperTools';
 import { TestArena } from './components/TestArena';
+import { WebSocketMonitor } from './components/WebSocketMonitor';
+import { StressLab } from './components/StressLab';
 import { PerformanceLab } from './components/PerformanceLab';
 import { EdgeStreamSandbox } from './components/EdgeStreamSandbox';
 import { CompilerInspector } from './components/CompilerInspector';
 import { DynamicCacheLab } from './components/DynamicCacheLab';
 import { OgMetadataStudio } from './components/OgMetadataStudio';
 import { SqliteStudio } from './components/SqliteStudio';
+import { DockerCockpit } from './components/DockerCockpit';
+import { ServerActionsLab } from './components/ServerActionsLab';
+import { MiddlewareLab } from './components/MiddlewareLab';
 import { BreadcrumbBar } from './components/BreadcrumbBar';
 import { ActiveTab, NoteItem } from './types';
 import { motion, AnimatePresence } from 'motion/react';
@@ -202,6 +207,18 @@ function AppContent() {
               </motion.div>
             )}
 
+            {activeTab === 'ws-monitor' && (
+              <motion.div
+                key="ws-monitor"
+                initial={{ opacity: 0, y: 8 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -8 }}
+                transition={{ duration: 0.15 }}
+              >
+                <WebSocketMonitor />
+              </motion.div>
+            )}
+
             {activeTab === 'performance-lab' && (
               <motion.div
                 key="performance-lab"
@@ -211,6 +228,18 @@ function AppContent() {
                 transition={{ duration: 0.15 }}
               >
                 <PerformanceLab />
+              </motion.div>
+            )}
+
+            {activeTab === 'stress-lab' && (
+              <motion.div
+                key="stress-lab"
+                initial={{ opacity: 0, y: 8 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -8 }}
+                transition={{ duration: 0.15 }}
+              >
+                <StressLab />
               </motion.div>
             )}
 
@@ -259,6 +288,42 @@ function AppContent() {
                 transition={{ duration: 0.15 }}
               >
                 <OgMetadataStudio />
+              </motion.div>
+            )}
+
+            {activeTab === 'docker-cockpit' && (
+              <motion.div
+                key="docker-cockpit"
+                initial={{ opacity: 0, y: 8 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -8 }}
+                transition={{ duration: 0.15 }}
+              >
+                <DockerCockpit />
+              </motion.div>
+            )}
+
+            {activeTab === 'server-actions-lab' && (
+              <motion.div
+                key="server-actions-lab"
+                initial={{ opacity: 0, y: 8 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -8 }}
+                transition={{ duration: 0.15 }}
+              >
+                <ServerActionsLab />
+              </motion.div>
+            )}
+
+            {activeTab === 'middleware-inspector' && (
+              <motion.div
+                key="middleware-inspector"
+                initial={{ opacity: 0, y: 8 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -8 }}
+                transition={{ duration: 0.15 }}
+              >
+                <MiddlewareLab />
               </motion.div>
             )}
 

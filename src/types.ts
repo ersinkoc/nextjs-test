@@ -63,15 +63,88 @@ export interface SecurityCheckItem {
 export type ActiveTab = 
   | 'overview' 
   | 'test-arena' 
+  | 'ws-monitor'
   | 'performance-lab' 
+  | 'stress-lab'
   | 'edge-sandbox'
   | 'compiler-inspector'
   | 'cache-lab'
   | 'og-metadata'
   | 'api-simulator' 
+  | 'server-actions-lab'
+  | 'middleware-inspector'
+  | 'docker-cockpit'
   | 'scratchpad' 
   | 'sqlite-studio'
   | 'tools';
+
+export type WsConnectionStatus = 'connecting' | 'connected' | 'disconnected' | 'reconnecting' | 'error';
+
+export interface WsEventRecord {
+  id: string;
+  timestamp: string;
+  epochMs: number;
+  direction: 'incoming' | 'outgoing' | 'system';
+  channel: string;
+  eventName: string;
+  payload: any;
+  payloadSize: number;
+  latencyMs?: number;
+  status: 'ok' | 'warn' | 'error';
+  rawString?: string;
+}
+
+export interface WsClientMetrics {
+  messagesReceived: number;
+  messagesSent: number;
+  bytesReceived: number;
+  bytesSent: number;
+  connectionUptimeSec: number;
+  activeChannels: string[];
+  reconnectAttempts: number;
+  lastPingMs: number;
+  serverClientsCount: number;
+}
+
+export interface StressSamplePoint {
+  index: number;
+  timeLabel: string;
+  latency: number;
+  avgLatency: number;
+  p95Latency: number;
+  successRate: number;
+  rps: number;
+  status: number;
+  isError: boolean;
+}
+
+export interface StressLogEntry {
+  id: string;
+  requestId: number;
+  endpoint: string;
+  status: number;
+  latencyMs: number;
+  timestamp: string;
+  error?: string;
+}
+
+export interface StressSummaryStats {
+  totalSent: number;
+  completed: number;
+  successful: number;
+  failed: number;
+  successRatePct: number;
+  minLatencyMs: number;
+  avgLatencyMs: number;
+  maxLatencyMs: number;
+  p50LatencyMs: number;
+  p90LatencyMs: number;
+  p95LatencyMs: number;
+  p99LatencyMs: number;
+  currentRps: number;
+  peakRps: number;
+  elapsedSec: number;
+}
 
 export interface ColumnInfo {
   cid: number;

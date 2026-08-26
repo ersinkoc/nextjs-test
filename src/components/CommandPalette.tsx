@@ -13,7 +13,12 @@ import {
   ArrowRight,
   Database,
   Share2,
-  HardDrive
+  HardDrive,
+  Container,
+  Send,
+  Shuffle,
+  Gauge,
+  Radio
 } from 'lucide-react';
 import { ActiveTab } from '../types';
 import { useI18n } from '../i18n';
@@ -42,11 +47,46 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({
       keywords: 'dashboard bento metrics overview home',
     },
     {
+      id: 'docker-cockpit' as ActiveTab,
+      title: t('nav.dockerCockpit'),
+      category: 'Docker & DevOps',
+      icon: Container,
+      keywords: 'docker container alpine standalone compose dockerfile multistage cgroups coldstart memory oom nonroot',
+    },
+    {
+      id: 'server-actions-lab' as ActiveTab,
+      title: t('nav.serverActionsLab'),
+      category: 'Next.js 16.3 Engine',
+      icon: Send,
+      keywords: 'server actions use server useoptimistic useactionstate form progressive enhancement csrf mutex revalidatepath',
+    },
+    {
+      id: 'middleware-inspector' as ActiveTab,
+      title: t('nav.middlewareInspector'),
+      category: 'Next.js 16.3 Engine',
+      icon: Shuffle,
+      keywords: 'middleware edge routing matcher redirect rewrite nexturl geo location ip parallel intercepting slots',
+    },
+    {
       id: 'test-arena' as ActiveTab,
       title: t('nav.testArena'),
       category: 'Testing',
       icon: Flame,
       keywords: 'test arena tests instant navigations server actions ppr compiler 16.3',
+    },
+    {
+      id: 'ws-monitor' as ActiveTab,
+      title: t('nav.wsMonitor'),
+      category: 'Real-Time & Telemetry',
+      icon: Radio,
+      keywords: 'websocket event monitor real-time socket connection states incoming events payloads table stream telemetry debug ping pong',
+    },
+    {
+      id: 'stress-lab' as ActiveTab,
+      title: t('nav.stressLab'),
+      category: 'Stress & Latency',
+      icon: Gauge,
+      keywords: 'stress test laboratory concurrent requests real-time line chart response time success rate latency p95 p99 throughput rps api simulator',
     },
     {
       id: 'performance-lab' as ActiveTab,

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { ActiveTab } from '../types';
-import { Sparkles, ArrowRight, Zap, Cloud, Box, Server, Clock, GitCommit, Play, CheckCircle2, Swords, Gauge } from 'lucide-react';
+import { Sparkles, ArrowRight, Zap, Cloud, Box, Server, Clock, GitCommit, Play, CheckCircle2, Swords, Gauge, Activity, Radio } from 'lucide-react';
 import { motion } from 'motion/react';
 import { useI18n } from '../i18n';
 
@@ -66,20 +66,52 @@ export const OverviewHero: React.FC<OverviewHeroProps> = ({ setActiveTab, notesC
           </div>
 
           <div className="mt-8 flex flex-wrap items-center justify-between gap-4 z-10">
-            <div className="flex gap-2.5 items-center">
+            <div className="flex flex-wrap gap-2 items-center">
               <button
                 onClick={() => setActiveTab('test-arena')}
-                className="px-4 py-2 bg-emerald-500 hover:bg-emerald-400 text-neutral-950 font-bold text-xs rounded-full flex items-center gap-1.5 transition-all shadow-sm active:scale-95 cursor-pointer"
+                className="px-3.5 py-2 bg-emerald-500 hover:bg-emerald-400 text-neutral-950 font-bold text-xs rounded-full flex items-center gap-1.5 transition-all shadow-sm active:scale-95 cursor-pointer"
               >
                 <Swords className="w-3.5 h-3.5" />
                 <span>{t('hero.enterArena')}</span>
               </button>
 
               <button
+                onClick={() => setActiveTab('ws-monitor')}
+                className="px-3.5 py-2 bg-cyan-500/10 hover:bg-cyan-500/20 text-cyan-600 dark:text-cyan-400 font-bold text-xs rounded-full flex items-center gap-1.5 transition-colors cursor-pointer border border-cyan-500/30"
+              >
+                <Radio className="w-3.5 h-3.5 text-cyan-500" />
+                <span>WS Monitor</span>
+              </button>
+
+              <button
+                onClick={() => setActiveTab('docker-cockpit')}
+                className="px-3.5 py-2 bg-cyan-500/10 hover:bg-cyan-500/20 text-cyan-600 dark:text-cyan-400 font-bold text-xs rounded-full flex items-center gap-1.5 transition-colors cursor-pointer border border-cyan-500/30"
+              >
+                <Server className="w-3.5 h-3.5 text-cyan-500" />
+                <span>Docker Cockpit</span>
+              </button>
+
+              <button
+                onClick={() => setActiveTab('server-actions-lab')}
+                className="px-3.5 py-2 bg-purple-500/10 hover:bg-purple-500/20 text-purple-600 dark:text-purple-400 font-bold text-xs rounded-full flex items-center gap-1.5 transition-colors cursor-pointer border border-purple-500/30"
+              >
+                <Zap className="w-3.5 h-3.5 text-purple-500" />
+                <span>Server Actions</span>
+              </button>
+
+              <button
+                onClick={() => setActiveTab('stress-lab')}
+                className="px-3.5 py-2 bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 font-bold text-xs rounded-full flex items-center gap-1.5 transition-colors cursor-pointer border border-emerald-500/30"
+              >
+                <Gauge className="w-3.5 h-3.5 text-emerald-500" />
+                <span>Stress Lab</span>
+              </button>
+
+              <button
                 onClick={() => setActiveTab('performance-lab')}
                 className="px-3.5 py-2 bg-zinc-100 dark:bg-neutral-800 hover:bg-zinc-200 dark:hover:bg-neutral-700 text-zinc-800 dark:text-neutral-200 font-semibold text-xs rounded-full flex items-center gap-1.5 transition-colors cursor-pointer border border-zinc-200 dark:border-neutral-700"
               >
-                <Gauge className="w-3.5 h-3.5 text-cyan-400" />
+                <Activity className="w-3.5 h-3.5 text-amber-400" />
                 <span>{t('hero.perfLab')}</span>
               </button>
             </div>
