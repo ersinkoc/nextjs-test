@@ -12,7 +12,8 @@ import {
   X,
   ArrowRight,
   Database,
-  Share2
+  Share2,
+  HardDrive
 } from 'lucide-react';
 import { ActiveTab } from '../types';
 import { useI18n } from '../i18n';
@@ -88,6 +89,13 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({
       category: 'API Sandbox',
       icon: Terminal,
       keywords: 'api route handler app router simulation get post stream',
+    },
+    {
+      id: 'sqlite-studio' as ActiveTab,
+      title: t('nav.sqliteStudio'),
+      category: 'Storage & Database',
+      icon: HardDrive,
+      keywords: 'sqlite database disk storage volume mount directus wal pragma query persistent kalici veritabani',
     },
     {
       id: 'scratchpad' as ActiveTab,

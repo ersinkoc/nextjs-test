@@ -1,5 +1,5 @@
-# Multi-stage Dockerfile for Next.js Test Arena
-# Powered by Node.js 24 LTS (Krypton) builder & High-Performance Nginx Alpine runner
+# Multi-stage Dockerfile with Persistent Disk Volume for Next.js Test Arena & SQLite
+# Node.js 24 LTS (Krypton) + Express + Persistent Volume Mount + Directus Bridge
 
 # ==========================================
 # Stage 1: Build Stage
@@ -11,42 +11,55 @@ WORKDIR /app
 # Copy dependency manifests
 COPY package*.json ./
 
-# Install all dependencies reliably across environments (ensuring devDependencies and target platform binaries are installed)
+# Install all build dependencies
 RUN npm install --no-audit
 
 # Copy source code and configuration files
 COPY . .
 
-# Build production bundle with optimized static output
+# Build both Vite frontend and Express server.cjs bundle
 RUN npm run build
 
 # ==========================================
-# Stage 2: Production Runtime Stage (Nginx)
+# Stage 2: Production Runtime Stage
 # ==========================================
-FROM nginx:alpine AS runner
+FROM node:24-alpine AS runner
 
 LABEL maintainer="Next.js Test Arena Team"
-LABEL description="Production container for Next.js Test Arena with Node 24 LTS build & Nginx serving"
+LABEL description="Production Full-Stack Container with Persistent SQLite Disk Storage"
 
-# Set working directory for web assets
-WORKDIR /usr/share/nginx/html
+WORKDIR /app
 
-# Clean default Nginx assets
-RUN rm -rf ./*
+# Set production environment
+ENV NODE_ENV=production
+ENV PORT=3000
+ENV DATA_DIR=/data
 
-# Copy built assets from builder stage
-COPY --from=builder /app/dist .
+# Install curl/wget for container healthchecks
+RUN apk add --no-cache curl wget
 
-# Copy custom Nginx configuration with SPA routing and security headers
-COPY nginx.conf /etc/nginx/conf.d/default.conf
+# Create persistent data directory with proper read/write permissions
+RUN mkdir -p /data && chown -R node:node /data
+
+# Declare mountable persistent volume for SQLite database & logs
+VOLUME ["/data"]
+
+# Copy package manifests & install only production runtime dependencies
+COPY package*.json ./
+RUN npm install --omit=dev --no-audit
+
+# Copy compiled assets and server bundle from builder stage
+COPY --from=builder /app/dist ./dist
 
 # Health check configuration
-HEALTHCHECK --interval=30s --timeout=5s --start-period=5s --retries=3 \
-  CMD wget --quiet --tries=1 --spider http://127.0.0.1:3000/ || exit 1
+HEALTHCHECK --interval=20s --timeout=5s --start-period=5s --retries=3 \
+  CMD wget --quiet --tries=1 --spider http://127.0.0.1:3000/api/health || exit 1
+
+# Switch to non-root user for security
+USER node
 
 # Expose production port 3000
 EXPOSE 3000
 
-# Run Nginx in foreground
-CMD ["nginx", "-g", "daemon off;"]
-
+# Start compiled CommonJS server with persistent SQLite disk mount
+CMD ["node", "dist/server.cjs"]

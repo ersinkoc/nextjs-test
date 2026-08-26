@@ -13,6 +13,7 @@ import { EdgeStreamSandbox } from './components/EdgeStreamSandbox';
 import { CompilerInspector } from './components/CompilerInspector';
 import { DynamicCacheLab } from './components/DynamicCacheLab';
 import { OgMetadataStudio } from './components/OgMetadataStudio';
+import { SqliteStudio } from './components/SqliteStudio';
 import { ActiveTab, NoteItem } from './types';
 import { motion, AnimatePresence } from 'motion/react';
 import { I18nProvider, useI18n } from './i18n';
@@ -275,6 +276,18 @@ function AppContent() {
                 <div>
                   <InteractiveCounter />
                 </div>
+              </motion.div>
+            )}
+
+            {activeTab === 'sqlite-studio' && (
+              <motion.div
+                key="sqlite-studio"
+                initial={{ opacity: 0, y: 8 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -8 }}
+                transition={{ duration: 0.15 }}
+              >
+                <SqliteStudio />
               </motion.div>
             )}
 

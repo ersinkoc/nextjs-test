@@ -16,7 +16,8 @@ import {
   Server,
   Layers,
   Database,
-  Share2
+  Share2,
+  HardDrive
 } from 'lucide-react';
 import { ActiveTab } from '../types';
 import { useI18n } from '../i18n';
@@ -112,6 +113,13 @@ export const Sidebar: React.FC<SidebarProps> = ({
     {
       groupKey: 'nav.group.tools',
       items: [
+        {
+          id: 'sqlite-studio' as ActiveTab,
+          labelKey: 'nav.sqliteStudio',
+          icon: HardDrive,
+          badge: 'SQLite',
+          badgeColor: 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20',
+        },
         {
           id: 'scratchpad' as ActiveTab,
           labelKey: 'nav.scratchpad',

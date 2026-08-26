@@ -70,4 +70,6 @@ export type ActiveTab =
   | 'og-metadata'
   | 'api-simulator' 
   | 'scratchpad' 
+  | 'sqlite-studio'
   | 'tools';
+

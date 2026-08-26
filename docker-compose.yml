@@ -1,13 +1,78 @@
 version: '3.8'
 
 services:
+  # ==========================================
+  # Next.js Test Arena (Full-Stack + SQLite)
+  # ==========================================
   app:
     build:
       context: .
       dockerfile: Dockerfile
-    container_name: nextjs_playground_app
+    container_name: nextjs_arena_app
+    restart: unless-stopped
     ports:
       - "3000:3000"
-    restart: unless-stopped
     environment:
       - NODE_ENV=production
+      - PORT=3000
+      - DATA_DIR=/data
+      - SQLITE_DB_NAME=arena.db
+      - DIRECTUS_URL=http://directus:8055
+      - DIRECTUS_TOKEN=arena-admin-secure-token-2026
+    volumes:
+      # Persistent Volume for SQLite Database & WAL logs
+      - arena_sqlite_data:/data
+      # Optional local bind mount for direct host file inspection:
+      # - ./data:/data
+    networks:
+      - arena_network
+    depends_on:
+      - directus
+
+  # ==========================================
+  # Directus Headless CMS Container (Optional / Ready-to-Connect)
+  # ==========================================
+  directus:
+    image: directus/directus:latest
+    container_name: nextjs_arena_directus
+    restart: unless-stopped
+    ports:
+      - "8055:8055"
+    environment:
+      KEY: "27db0fac-8197-4402-9905-b1a1c97a9f8f"
+      SECRET: "6d1f9746-88a9-4a0b-93ff-1833190df189"
+      ADMIN_EMAIL: "admin@example.com"
+      ADMIN_PASSWORD: "admin"
+      DB_CLIENT: "sqlite3"
+      DB_FILENAME: "/directus/database/data.db"
+      WEBSOCKETS_ENABLED: "true"
+      CORS_ENABLED: "true"
+      CORS_ORIGIN: "true"
+    volumes:
+      - directus_database:/directus/database
+      - directus_uploads:/directus/uploads
+      - directus_extensions:/directus/extensions
+    networks:
+      - arena_network
+
+# ==========================================
+# Persistent Named Volumes (Data Durability)
+# ==========================================
+volumes:
+  # Main SQLite persistent storage (survives container recreation/deployments)
+  arena_sqlite_data:
+    driver: local
+  # Directus persistent database & asset uploads
+  directus_database:
+    driver: local
+  directus_uploads:
+    driver: local
+  directus_extensions:
+    driver: local
+
+# ==========================================
+# Bridge Network for Internal Container Communication
+# ==========================================
+networks:
+  arena_network:
+    driver: bridge
