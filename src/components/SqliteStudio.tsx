@@ -33,11 +33,13 @@ import {
   XCircle,
   ArrowUpRight,
   X,
-  GitFork
+  GitFork,
+  Sliders
 } from 'lucide-react';
 import { useI18n } from '../i18n';
 import { motion, AnimatePresence } from 'motion/react';
 import { SqliteErViewer } from './SqliteErViewer';
+import { SqliteSchemaModifier } from './SqliteSchemaModifier';
 
 interface TableDetail {
   name: string;
@@ -141,7 +143,7 @@ export const SqliteStudio: React.FC = () => {
   // Status & Loading states
   const [dbStatus, setDbStatus] = useState<DbStatus | null>(null);
   const [isLoadingStatus, setIsLoadingStatus] = useState<boolean>(false);
-  const [activeTab, setActiveTab] = useState<'query' | 'tables' | 'schema' | 'directus' | 'docker'>('query');
+  const [activeTab, setActiveTab] = useState<'query' | 'tables' | 'modifier' | 'schema' | 'directus' | 'docker'>('query');
 
   // SQL Query Runner state
   const [sqlInput, setSqlInput] = useState<string>(SQL_PRESETS[0].sql);
@@ -664,6 +666,19 @@ export const SqliteStudio: React.FC = () => {
         </button>
 
         <button
+          id="sqlite-modifier-tab-btn"
+          onClick={() => setActiveTab('modifier')}
+          className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-mono font-bold transition-all ${
+            activeTab === 'modifier'
+              ? 'bg-zinc-900 dark:bg-white text-white dark:text-black shadow-xs'
+              : 'bg-zinc-100 dark:bg-neutral-800 text-zinc-600 dark:text-neutral-300 hover:bg-zinc-200 dark:hover:bg-neutral-700'
+          }`}
+        >
+          <Sliders size={14} className="text-emerald-500" />
+          <span>{t('sqlite.modifierTab')}</span>
+        </button>
+
+        <button
           id="sqlite-schema-tab-btn"
           onClick={() => setActiveTab('schema')}
           className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-mono font-bold transition-all ${
@@ -1142,16 +1157,26 @@ export const SqliteStudio: React.FC = () => {
                 </div>
               </div>
 
-              {/* Table search filter */}
-              <div className="relative w-full sm:w-56">
-                <Search size={13} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-zinc-400" />
-                <input
-                  type="text"
-                  value={tableSearch}
-                  onChange={(e) => setTableSearch(e.target.value)}
-                  placeholder="Filter records..."
-                  className="w-full pl-8 pr-3 py-1.5 rounded-xl bg-zinc-50 dark:bg-neutral-950 border border-zinc-200 dark:border-neutral-800 text-xs font-mono text-zinc-800 dark:text-neutral-200 focus:outline-none"
-                />
+              {/* Table search filter & Quick Modify Schema */}
+              <div className="flex items-center gap-2 w-full sm:w-auto">
+                <button
+                  onClick={() => setActiveTab('modifier')}
+                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30 text-xs font-mono font-bold transition-all cursor-pointer whitespace-nowrap"
+                >
+                  <Sliders size={13} />
+                  <span>{t('sqlite.modifierTab')}</span>
+                </button>
+
+                <div className="relative w-full sm:w-48">
+                  <Search size={13} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-zinc-400" />
+                  <input
+                    type="text"
+                    value={tableSearch}
+                    onChange={(e) => setTableSearch(e.target.value)}
+                    placeholder="Filter records..."
+                    className="w-full pl-8 pr-3 py-1.5 rounded-xl bg-zinc-50 dark:bg-neutral-950 border border-zinc-200 dark:border-neutral-800 text-xs font-mono text-zinc-800 dark:text-neutral-200 focus:outline-none"
+                  />
+                </div>
               </div>
             </div>
 
@@ -1198,12 +1223,35 @@ export const SqliteStudio: React.FC = () => {
         </div>
       )}
 
+      {/* TAB: Schema Modifier (ALTER TABLE & DDL) */}
+      {activeTab === 'modifier' && (
+        <SqliteSchemaModifier
+          onNavigateToQuery={(sql) => {
+            setSqlInput(sql);
+            setActiveTab('query');
+          }}
+          onNavigateToTables={(tableName) => {
+            setSelectedTableName(tableName);
+            fetchTableData(tableName);
+            setActiveTab('tables');
+          }}
+          onNavigateToEr={(tableName) => {
+            setActiveTab('schema');
+          }}
+          onRefreshStatus={fetchDbStatus}
+        />
+      )}
+
       {/* TAB 3: ER Schema Graph (D3.js) */}
       {activeTab === 'schema' && (
         <SqliteErViewer
           onNavigateToQuery={(sql) => {
             setSqlInput(sql);
             setActiveTab('query');
+          }}
+          onNavigateToModifier={(tableName) => {
+            setSelectedTableName(tableName);
+            setActiveTab('modifier');
           }}
           onRefreshStatus={fetchDbStatus}
         />

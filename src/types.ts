@@ -73,3 +73,53 @@ export type ActiveTab =
   | 'sqlite-studio'
   | 'tools';
 
+export interface ColumnInfo {
+  cid: number;
+  name: string;
+  type: string;
+  notnull: boolean;
+  dflt_value: any;
+  pk: boolean;
+}
+
+export interface ForeignKeyInfo {
+  id: number;
+  seq: number;
+  targetTable: string;
+  fromColumn: string;
+  toColumn: string;
+  onUpdate: string;
+  onDelete: string;
+}
+
+export interface TableIndexInfo {
+  name: string;
+  unique: boolean;
+  origin: string;
+  partial: boolean;
+}
+
+export interface TableSchemaDetail {
+  name: string;
+  rowCount: number;
+  sql: string;
+  columns: ColumnInfo[];
+  foreignKeys: ForeignKeyInfo[];
+  indexes: TableIndexInfo[];
+  primaryKeys: string[];
+  inferredRelations?: Array<{
+    targetTable: string;
+    fromColumn: string;
+    toColumn: string;
+    relationType: '1:N' | 'N:1' | '1:1';
+  }>;
+}
+
+export interface DbFullSchema {
+  tables: TableSchemaDetail[];
+  totalTables: number;
+  totalColumns: number;
+  totalForeignKeys: number;
+  ddlScript: string;
+}
+

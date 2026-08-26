@@ -108,6 +108,7 @@ interface ERLink extends d3.SimulationLinkDatum<ERNode> {
 
 interface SqliteErViewerProps {
   onNavigateToQuery?: (sql: string) => void;
+  onNavigateToModifier?: (tableName: string) => void;
   onRefreshStatus?: () => void;
 }
 
@@ -124,6 +125,7 @@ const TABLE_COLORS = [
 
 export const SqliteErViewer: React.FC<SqliteErViewerProps> = ({
   onNavigateToQuery,
+  onNavigateToModifier,
   onRefreshStatus,
 }) => {
   const { t } = useI18n();
@@ -958,16 +960,29 @@ export const SqliteErViewer: React.FC<SqliteErViewerProps> = ({
                   </span>
                 </div>
 
-                {onNavigateToQuery && (
-                  <button
-                    onClick={() => onNavigateToQuery(`SELECT * FROM "${selectedTable.name}" LIMIT 25;`)}
-                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30 text-xs font-mono font-semibold transition-all cursor-pointer"
-                    title={t('sqlite.quickQuery')}
-                  >
-                    <Terminal size={13} />
-                    <span>Query</span>
-                  </button>
-                )}
+                <div className="flex items-center gap-2">
+                  {onNavigateToModifier && (
+                    <button
+                      onClick={() => onNavigateToModifier(selectedTable.name)}
+                      className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-purple-500/10 hover:bg-purple-500/20 text-purple-600 dark:text-purple-400 border border-purple-500/30 text-xs font-mono font-semibold transition-all cursor-pointer"
+                      title={t('sqlite.modifierTab')}
+                    >
+                      <Sliders size={13} />
+                      <span>Alter</span>
+                    </button>
+                  )}
+
+                  {onNavigateToQuery && (
+                    <button
+                      onClick={() => onNavigateToQuery(`SELECT * FROM "${selectedTable.name}" LIMIT 25;`)}
+                      className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30 text-xs font-mono font-semibold transition-all cursor-pointer"
+                      title={t('sqlite.quickQuery')}
+                    >
+                      <Terminal size={13} />
+                      <span>Query</span>
+                    </button>
+                  )}
+                </div>
               </div>
 
               {/* Columns Table Breakdown */}
