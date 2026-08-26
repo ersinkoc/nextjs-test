@@ -20,12 +20,26 @@ export interface ApiLog {
 export interface TestCase {
   id: string;
   name: string;
-  category: 'Server Actions' | 'App Router' | 'Hydration' | 'Middleware' | 'Edge Streaming' | 'Turbopack Cache' | 'Instant Navigations' | 'React Compiler';
+  category: 
+    | 'Server Actions' 
+    | 'App Router' 
+    | 'Hydration' 
+    | 'Middleware' 
+    | 'Edge Streaming' 
+    | 'Turbopack Cache' 
+    | 'Instant Navigations' 
+    | 'React Compiler'
+    | 'PPR & Suspense'
+    | 'Chaos & Concurrency'
+    | 'Async Context'
+    | 'Security & CSRF';
   description: string;
   status: 'idle' | 'running' | 'passed' | 'failed';
   executionTime?: number;
   assertions: { name: string; passed: boolean; message?: string }[];
   codeSample: string;
+  stressLevel?: 'Normal' | 'Hardcore' | 'Extreme';
+  edgeCaseNote?: string;
 }
 
 export interface BenchmarkResult {
@@ -43,6 +57,15 @@ export interface SecurityCheckItem {
   desc: string;
   status: 'pass' | 'passed' | 'warning' | 'info';
   score: string;
+  cveId?: string;
 }
 
-export type ActiveTab = 'overview' | 'api-simulator' | 'test-arena' | 'performance-lab' | 'scratchpad' | 'tools';
+export type ActiveTab = 
+  | 'overview' 
+  | 'test-arena' 
+  | 'performance-lab' 
+  | 'edge-sandbox'
+  | 'compiler-inspector'
+  | 'api-simulator' 
+  | 'scratchpad' 
+  | 'tools';

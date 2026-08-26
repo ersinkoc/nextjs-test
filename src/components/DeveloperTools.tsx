@@ -1,16 +1,19 @@
 import React, { useState } from 'react';
-import { 
-  Code2, 
-  Copy, 
-  Check, 
-  Terminal, 
-  Cpu, 
-  Key, 
-  FileCode, 
-  Sparkles, 
-  ArrowRightLeft, 
+import {
+  Code2,
+  Copy,
+  Check,
+  Terminal,
+  Cpu,
+  Key,
+  FileCode,
+  Sparkles,
+  ArrowRightLeft,
   Braces,
-  Hash
+  Hash,
+  Shield,
+  Layers,
+  Settings
 } from 'lucide-react';
 import { useI18n } from '../i18n';
 
@@ -30,6 +33,9 @@ export const DeveloperTools: React.FC = () => {
   );
   const [formattedJson, setFormattedJson] = useState<string>('');
   const [jsonError, setJsonError] = useState<string | null>(null);
+
+  // Config Studio Tab
+  const [activeConfigTab, setActiveConfigTab] = useState<'next-config' | 'middleware' | 'otel'>('next-config');
 
   const copyToClipboard = (text: string, id: string) => {
     navigator.clipboard.writeText(text);
@@ -80,226 +86,266 @@ export const DeveloperTools: React.FC = () => {
 const nextConfig: NextConfig = {
   reactStrictMode: true,
   turbopack: {
-    // Persistent build caching for ultra-fast builds
+    // Persistent build caching for 90% memory drop
     persistentCaching: true,
   },
   experimental: {
     // Next.js 16.3 Rust React Compiler & Instant Navigations
     reactCompiler: true,
     instantNavigations: true,
-    ppr: true,
+    ppr: 'incremental',
     serverActions: {
-      bodySizeLimit: '6mb',
+      bodySizeLimit: '10mb',
     },
   },
 };
 
 export default nextConfig;`;
 
+  const middlewareSnippet = `import { NextResponse } from 'next/server';
+import type { NextRequest } from 'next/server';
+
+export function middleware(request: NextRequest) {
+  // Edge security header injection & strict routing
+  const response = NextResponse.next();
+  response.headers.set('x-nextjs-arena-edge', 'v16.3');
+  response.headers.set('X-Content-Type-Options', 'nosniff');
+  return response;
+}
+
+export const config = {
+  matcher: ['/((?!_next/static|_next/image|favicon.ico).*)'],
+};`;
+
+  const otelSnippet = `// instrumentation.ts (Next.js 16.3 OpenTelemetry & Telemetry Guard)
+export async function register() {
+  if (process.env.NEXT_RUNTIME === 'nodejs') {
+    console.log('⚡ Node.js 24 LTS Runtime initialized with OpenTelemetry SDK');
+  }
+}`;
+
   return (
     <div className="space-y-6">
-      {/* Top Header */}
-      <div className="bg-white dark:bg-neutral-900 rounded-3xl p-6 sm:p-8 border border-zinc-200 dark:border-neutral-800 shadow-sm">
-        <span className="text-xs font-bold text-zinc-500 dark:text-neutral-500 uppercase tracking-widest flex items-center gap-1.5 mb-1">
-          <Terminal className="w-3.5 h-3.5 text-emerald-500" />
-          {t('tools.badge')}
-        </span>
-        <h2 className="text-xl sm:text-2xl font-bold text-zinc-900 dark:text-white">
+      {/* Header Bento Card */}
+      <div className="p-6 rounded-3xl bg-white dark:bg-neutral-900 border border-zinc-200 dark:border-neutral-800 shadow-2xs">
+        <div className="flex items-center gap-2">
+          <span className="px-2.5 py-0.5 rounded-full text-xs font-mono font-bold bg-zinc-500/10 text-zinc-600 dark:text-zinc-400 border border-zinc-500/20">
+            {t('tools.badge')}
+          </span>
+          <span className="text-xs font-mono text-zinc-500 dark:text-neutral-400">
+            Next.js 16.3 Dev Suite
+          </span>
+        </div>
+        <h2 className="text-xl font-bold text-zinc-900 dark:text-white tracking-tight mt-1">
           {t('tools.title')}
         </h2>
       </div>
 
-      {/* Grid of Tools */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-        {/* 1. UUID Generator */}
-        <div className="bg-white dark:bg-neutral-900 rounded-3xl p-6 border border-zinc-200 dark:border-neutral-800 shadow-sm flex flex-col justify-between">
-          <div>
-            <div className="flex items-center justify-between mb-3">
-              <span className="text-xs font-bold text-zinc-500 dark:text-neutral-500 uppercase tracking-wider flex items-center gap-1.5">
-                <Key className="w-3.5 h-3.5 text-emerald-500" />
-                {t('tools.uuidTitle')}
-              </span>
-              <button
-                onClick={generateUuid}
-                className="text-[11px] font-mono text-emerald-600 dark:text-emerald-400 hover:underline flex items-center gap-1 font-bold cursor-pointer"
-              >
-                <Sparkles className="w-3 h-3" /> {t('tools.generateNew')}
-              </button>
-            </div>
-
-            <div className="p-3 bg-zinc-50 dark:bg-neutral-950 rounded-2xl border border-zinc-200 dark:border-neutral-800 flex items-center justify-between gap-2 font-mono text-xs text-zinc-900 dark:text-white">
-              <span className="truncate">{uuid}</span>
-              <button
-                onClick={() => copyToClipboard(uuid, 'uuid')}
-                className="p-1.5 hover:bg-zinc-200 dark:hover:bg-neutral-800 rounded-lg text-zinc-500 transition-colors cursor-pointer"
-              >
-                {copiedId === 'uuid' ? (
-                  <Check className="w-3.5 h-3.5 text-emerald-500" />
-                ) : (
-                  <Copy className="w-3.5 h-3.5" />
-                )}
-              </button>
-            </div>
+      {/* Config Studio Bento */}
+      <div className="p-6 rounded-3xl bg-white dark:bg-neutral-900 border border-zinc-200 dark:border-neutral-800 shadow-2xs space-y-4">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <div className="flex items-center gap-2">
+            <Settings size={18} className="text-emerald-500" />
+            <h3 className="font-bold text-base text-zinc-900 dark:text-white">
+              Next.js 16.3 Configuration Studio
+            </h3>
           </div>
 
-          <p className="text-[10px] font-mono text-zinc-400 dark:text-neutral-500 mt-4">
-            {t('tools.uuidSub')}
-          </p>
-        </div>
-
-        {/* 2. Base64 Converter */}
-        <div className="bg-white dark:bg-neutral-900 rounded-3xl p-6 border border-zinc-200 dark:border-neutral-800 shadow-sm flex flex-col justify-between">
-          <div>
-            <div className="flex items-center justify-between mb-3">
-              <span className="text-xs font-bold text-zinc-500 dark:text-neutral-500 uppercase tracking-wider flex items-center gap-1.5">
-                <ArrowRightLeft className="w-3.5 h-3.5 text-cyan-500" />
-                {t('tools.base64Title')}
-              </span>
-              <div className="flex bg-zinc-100 dark:bg-neutral-800 rounded-lg p-0.5 text-[10px] font-mono">
-                <button
-                  onClick={() => setBase64Mode('encode')}
-                  className={`px-2 py-0.5 rounded-md cursor-pointer ${
-                    base64Mode === 'encode'
-                      ? 'bg-white dark:bg-neutral-700 font-bold text-zinc-900 dark:text-white shadow-xs'
-                      : 'text-zinc-500 dark:text-neutral-400'
-                  }`}
-                >
-                  Encode
-                </button>
-                <button
-                  onClick={() => setBase64Mode('decode')}
-                  className={`px-2 py-0.5 rounded-md cursor-pointer ${
-                    base64Mode === 'decode'
-                      ? 'bg-white dark:bg-neutral-700 font-bold text-zinc-900 dark:text-white shadow-xs'
-                      : 'text-zinc-500 dark:text-neutral-400'
-                  }`}
-                >
-                  Decode
-                </button>
-              </div>
-            </div>
-
-            <input
-              type="text"
-              value={base64Input}
-              onChange={(e) => setBase64Input(e.target.value)}
-              placeholder={t('tools.base64Placeholder')}
-              className="w-full mb-2 px-3 py-2 text-xs bg-zinc-50 dark:bg-neutral-950 border border-zinc-200 dark:border-neutral-800 rounded-xl text-zinc-900 dark:text-white placeholder-zinc-400 dark:placeholder-neutral-500 focus:outline-none"
-            />
-
-            <div className="p-2.5 bg-zinc-50 dark:bg-neutral-950 rounded-xl border border-zinc-200 dark:border-neutral-800 flex items-center justify-between gap-2 font-mono text-xs text-cyan-600 dark:text-cyan-400 truncate">
-              <span className="truncate">{getBase64Output()}</span>
-              <button
-                onClick={() => copyToClipboard(getBase64Output(), 'base64')}
-                className="p-1 hover:bg-zinc-200 dark:hover:bg-neutral-800 rounded text-zinc-500 cursor-pointer"
-              >
-                {copiedId === 'base64' ? (
-                  <Check className="w-3.5 h-3.5 text-emerald-500" />
-                ) : (
-                  <Copy className="w-3.5 h-3.5" />
-                )}
-              </button>
-            </div>
-          </div>
-
-          <p className="text-[10px] font-mono text-zinc-400 dark:text-neutral-500 mt-4">
-            {t('tools.base64Sub')}
-          </p>
-        </div>
-
-        {/* 3. Text Case Formatter */}
-        <div className="bg-white dark:bg-neutral-900 rounded-3xl p-6 border border-zinc-200 dark:border-neutral-800 shadow-sm flex flex-col justify-between">
-          <div>
-            <span className="text-xs font-bold text-zinc-500 dark:text-neutral-500 uppercase tracking-wider flex items-center gap-1.5 mb-3">
-              <Hash className="w-3.5 h-3.5 text-purple-500" />
-              {t('tools.caseTitle')}
-            </span>
-
-            <input
-              type="text"
-              value={caseInput}
-              onChange={(e) => setCaseInput(e.target.value)}
-              placeholder={t('tools.casePlaceholder')}
-              className="w-full mb-2 px-3 py-2 text-xs bg-zinc-50 dark:bg-neutral-950 border border-zinc-200 dark:border-neutral-800 rounded-xl text-zinc-900 dark:text-white placeholder-zinc-400 dark:placeholder-neutral-500 focus:outline-none"
-            />
-
-            <div className="space-y-1.5 font-mono text-[11px]">
-              <div className="flex justify-between items-center bg-zinc-50 dark:bg-neutral-950 px-2.5 py-1 rounded-lg border border-zinc-200 dark:border-neutral-800">
-                <span className="text-zinc-400">camelCase:</span>
-                <span className="text-emerald-500 font-bold">{toCamelCase(caseInput)}</span>
-              </div>
-              <div className="flex justify-between items-center bg-zinc-50 dark:bg-neutral-950 px-2.5 py-1 rounded-lg border border-zinc-200 dark:border-neutral-800">
-                <span className="text-zinc-400">kebab-case:</span>
-                <span className="text-cyan-400 font-bold">{toKebabCase(caseInput)}</span>
-              </div>
-              <div className="flex justify-between items-center bg-zinc-50 dark:bg-neutral-950 px-2.5 py-1 rounded-lg border border-zinc-200 dark:border-neutral-800">
-                <span className="text-zinc-400">snake_case:</span>
-                <span className="text-amber-400 font-bold">{toSnakeCase(caseInput)}</span>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* 4. Large JSON Formatter Bento (2 cols) */}
-        <div className="md:col-span-2 bg-white dark:bg-neutral-900 rounded-3xl p-6 border border-zinc-200 dark:border-neutral-800 shadow-sm space-y-4">
-          <div className="flex items-center justify-between">
-            <span className="text-xs font-bold text-zinc-500 dark:text-neutral-500 uppercase tracking-wider flex items-center gap-1.5">
-              <Braces className="w-3.5 h-3.5 text-emerald-500" />
-              {t('tools.jsonTitle')}
-            </span>
+          <div className="flex items-center bg-zinc-100 dark:bg-neutral-800 p-0.5 rounded-xl border border-zinc-200 dark:border-neutral-700 text-xs font-mono font-bold">
             <button
-              onClick={handleFormatJson}
-              className="px-3 py-1 bg-emerald-500 hover:bg-emerald-400 text-neutral-950 rounded-full font-bold text-xs flex items-center gap-1 cursor-pointer transition-all shadow-xs"
+              onClick={() => setActiveConfigTab('next-config')}
+              className={`px-3 py-1 rounded-lg transition-all ${
+                activeConfigTab === 'next-config'
+                  ? 'bg-white dark:bg-neutral-900 text-emerald-500 shadow-xs'
+                  : 'text-zinc-500 dark:text-neutral-400'
+              }`}
             >
-              <Sparkles className="w-3 h-3" />
-              <span>{t('tools.jsonFormat')}</span>
+              next.config.ts
+            </button>
+            <button
+              onClick={() => setActiveConfigTab('middleware')}
+              className={`px-3 py-1 rounded-lg transition-all ${
+                activeConfigTab === 'middleware'
+                  ? 'bg-white dark:bg-neutral-900 text-emerald-500 shadow-xs'
+                  : 'text-zinc-500 dark:text-neutral-400'
+              }`}
+            >
+              middleware.ts
+            </button>
+            <button
+              onClick={() => setActiveConfigTab('otel')}
+              className={`px-3 py-1 rounded-lg transition-all ${
+                activeConfigTab === 'otel'
+                  ? 'bg-white dark:bg-neutral-900 text-emerald-500 shadow-xs'
+                  : 'text-zinc-500 dark:text-neutral-400'
+              }`}
+            >
+              instrumentation.ts
+            </button>
+          </div>
+        </div>
+
+        <div className="relative">
+          <button
+            onClick={() =>
+              copyToClipboard(
+                activeConfigTab === 'next-config'
+                  ? next16ConfigSnippet
+                  : activeConfigTab === 'middleware'
+                  ? middlewareSnippet
+                  : otelSnippet,
+                'config-code'
+              )
+            }
+            className="absolute right-4 top-4 flex items-center gap-1 px-2.5 py-1 rounded-lg bg-zinc-800 text-zinc-200 hover:text-white text-xs font-mono border border-zinc-700 transition-colors"
+          >
+            {copiedId === 'config-code' ? <Check size={12} className="text-emerald-400" /> : <Copy size={12} />}
+            <span>{copiedId === 'config-code' ? 'Copied' : t('tools.copy')}</span>
+          </button>
+          <pre className="p-4 rounded-2xl bg-zinc-950 text-emerald-400 font-mono text-xs overflow-x-auto leading-relaxed border border-zinc-800">
+            <code>
+              {activeConfigTab === 'next-config'
+                ? next16ConfigSnippet
+                : activeConfigTab === 'middleware'
+                ? middlewareSnippet
+                : otelSnippet}
+            </code>
+          </pre>
+        </div>
+      </div>
+
+      {/* 4 Utility Cards Grid */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+        {/* UUID Generator */}
+        <div className="p-5 rounded-3xl bg-white dark:bg-neutral-900 border border-zinc-200 dark:border-neutral-800 shadow-2xs space-y-4">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <Key size={16} className="text-sky-500" />
+              <h4 className="font-bold text-sm text-zinc-900 dark:text-white">
+                {t('tools.uuidTitle')}
+              </h4>
+            </div>
+            <button
+              id="generate-uuid-btn"
+              onClick={generateUuid}
+              className="px-3 py-1 rounded-xl bg-zinc-100 dark:bg-neutral-800 text-zinc-700 dark:text-neutral-300 hover:bg-zinc-200 dark:hover:bg-neutral-700 text-xs font-mono font-semibold transition-all"
+            >
+              {t('tools.generateNew')}
             </button>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            <textarea
-              rows={5}
-              value={jsonInput}
-              onChange={(e) => setJsonInput(e.target.value)}
-              className="w-full p-3 font-mono text-xs bg-zinc-50 dark:bg-neutral-950 border border-zinc-200 dark:border-neutral-800 rounded-2xl text-zinc-900 dark:text-white focus:outline-none resize-none"
-            />
-            <div className="relative p-3 font-mono text-xs bg-neutral-950 border border-neutral-800 rounded-2xl text-emerald-400 overflow-y-auto max-h-[140px]">
-              {jsonError ? (
-                <span className="text-rose-400">{jsonError}</span>
-              ) : formattedJson ? (
-                <pre>{formattedJson}</pre>
-              ) : (
-                <span className="text-neutral-600">{t('tools.jsonSub')}</span>
-              )}
+          <div className="p-3 rounded-2xl bg-zinc-50 dark:bg-neutral-950 border border-zinc-200/80 dark:border-neutral-800 flex items-center justify-between font-mono text-xs text-zinc-800 dark:text-neutral-200">
+            <span className="truncate pr-2">{uuid}</span>
+            <button
+              onClick={() => copyToClipboard(uuid, 'uuid')}
+              className="text-zinc-400 hover:text-zinc-600 dark:hover:text-neutral-200 p-1"
+            >
+              {copiedId === 'uuid' ? <Check size={14} className="text-emerald-500" /> : <Copy size={14} />}
+            </button>
+          </div>
+          <p className="text-[11px] text-zinc-400 font-mono">{t('tools.uuidSub')}</p>
+        </div>
+
+        {/* Base64 Converter */}
+        <div className="p-5 rounded-3xl bg-white dark:bg-neutral-900 border border-zinc-200 dark:border-neutral-800 shadow-2xs space-y-4">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <Hash size={16} className="text-teal-500" />
+              <h4 className="font-bold text-sm text-zinc-900 dark:text-white">
+                {t('tools.base64Title')}
+              </h4>
+            </div>
+            <button
+              onClick={() => setBase64Mode((m) => (m === 'encode' ? 'decode' : 'encode'))}
+              className="px-3 py-1 rounded-xl bg-zinc-100 dark:bg-neutral-800 text-zinc-700 dark:text-neutral-300 hover:bg-zinc-200 dark:hover:bg-neutral-700 text-xs font-mono font-semibold transition-all"
+            >
+              {base64Mode === 'encode' ? 'Mode: Encode' : 'Mode: Decode'}
+            </button>
+          </div>
+
+          <input
+            type="text"
+            value={base64Input}
+            onChange={(e) => setBase64Input(e.target.value)}
+            placeholder={t('tools.base64Placeholder')}
+            className="w-full px-3 py-2 rounded-xl bg-zinc-50 dark:bg-neutral-950 border border-zinc-200/80 dark:border-neutral-800 text-xs font-mono text-zinc-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-emerald-500"
+          />
+
+          <div className="p-3 rounded-2xl bg-zinc-50 dark:bg-neutral-950 border border-zinc-200/80 dark:border-neutral-800 flex items-center justify-between font-mono text-xs text-zinc-800 dark:text-neutral-200">
+            <span className="truncate pr-2">{getBase64Output()}</span>
+            <button
+              onClick={() => copyToClipboard(getBase64Output(), 'base64')}
+              className="text-zinc-400 hover:text-zinc-600 dark:hover:text-neutral-200 p-1"
+            >
+              {copiedId === 'base64' ? <Check size={14} className="text-emerald-500" /> : <Copy size={14} />}
+            </button>
+          </div>
+        </div>
+
+        {/* Text Case Converter */}
+        <div className="p-5 rounded-3xl bg-white dark:bg-neutral-900 border border-zinc-200 dark:border-neutral-800 shadow-2xs space-y-4">
+          <div className="flex items-center gap-2">
+            <ArrowRightLeft size={16} className="text-amber-500" />
+            <h4 className="font-bold text-sm text-zinc-900 dark:text-white">
+              {t('tools.caseTitle')}
+            </h4>
+          </div>
+
+          <input
+            type="text"
+            value={caseInput}
+            onChange={(e) => setCaseInput(e.target.value)}
+            placeholder={t('tools.casePlaceholder')}
+            className="w-full px-3 py-2 rounded-xl bg-zinc-50 dark:bg-neutral-950 border border-zinc-200/80 dark:border-neutral-800 text-xs font-mono text-zinc-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-emerald-500"
+          />
+
+          <div className="space-y-1.5 font-mono text-xs">
+            <div className="p-2 rounded-xl bg-zinc-50 dark:bg-neutral-950 border border-zinc-200/80 dark:border-neutral-800 flex justify-between">
+              <span className="text-zinc-400">camelCase:</span>
+              <span className="text-zinc-900 dark:text-white font-bold">{toCamelCase(caseInput)}</span>
+            </div>
+            <div className="p-2 rounded-xl bg-zinc-50 dark:bg-neutral-950 border border-zinc-200/80 dark:border-neutral-800 flex justify-between">
+              <span className="text-zinc-400">kebab-case:</span>
+              <span className="text-zinc-900 dark:text-white font-bold">{toKebabCase(caseInput)}</span>
             </div>
           </div>
         </div>
 
-        {/* 5. Next.js 16.3 Config Generator */}
-        <div className="bg-white dark:bg-neutral-900 rounded-3xl p-6 border border-zinc-200 dark:border-neutral-800 shadow-sm flex flex-col justify-between">
-          <div>
-            <div className="flex items-center justify-between mb-3">
-              <span className="text-xs font-bold text-zinc-500 dark:text-neutral-500 uppercase tracking-wider flex items-center gap-1.5">
-                <FileCode className="w-3.5 h-3.5 text-emerald-500" />
-                {t('tools.nextConfigTitle')}
-              </span>
-              <button
-                onClick={() => copyToClipboard(next16ConfigSnippet, 'config')}
-                className="text-[11px] font-mono text-zinc-500 dark:text-neutral-400 hover:text-emerald-500 flex items-center gap-1 cursor-pointer"
-              >
-                {copiedId === 'config' ? (
-                  <Check className="w-3 h-3 text-emerald-500" />
-                ) : (
-                  <Copy className="w-3 h-3" />
-                )}
-                <span>{t('tools.copy')}</span>
-              </button>
+        {/* JSON Validator & Formatter */}
+        <div className="p-5 rounded-3xl bg-white dark:bg-neutral-900 border border-zinc-200 dark:border-neutral-800 shadow-2xs space-y-4">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <Braces size={16} className="text-indigo-500" />
+              <h4 className="font-bold text-sm text-zinc-900 dark:text-white">
+                {t('tools.jsonTitle')}
+              </h4>
             </div>
-
-            <div className="p-3 bg-neutral-950 rounded-2xl border border-neutral-800 text-[11px] font-mono text-emerald-400 overflow-x-auto">
-              <pre>{next16ConfigSnippet}</pre>
-            </div>
+            <button
+              onClick={handleFormatJson}
+              className="px-3 py-1 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-mono font-bold transition-all"
+            >
+              {t('tools.jsonFormat')}
+            </button>
           </div>
+
+          <textarea
+            rows={3}
+            value={jsonInput}
+            onChange={(e) => setJsonInput(e.target.value)}
+            className="w-full px-3 py-2 rounded-xl bg-zinc-50 dark:bg-neutral-950 border border-zinc-200/80 dark:border-neutral-800 text-xs font-mono text-zinc-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-emerald-500"
+          />
+
+          {jsonError && (
+            <div className="p-2 rounded-xl bg-rose-500/10 text-rose-500 border border-rose-500/20 text-[11px] font-mono">
+              Error: {jsonError}
+            </div>
+          )}
+
+          {formattedJson && (
+            <pre className="p-3 rounded-xl bg-zinc-950 text-emerald-400 font-mono text-[11px] max-h-32 overflow-y-auto scrollbar-thin">
+              <code>{formattedJson}</code>
+            </pre>
+          )}
         </div>
       </div>
     </div>

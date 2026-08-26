@@ -1,22 +1,27 @@
 import React, { useState } from 'react';
-import { 
-  Play, 
-  RotateCcw, 
-  CheckCircle2, 
-  XCircle, 
-  Clock, 
-  Zap, 
-  ShieldCheck, 
-  Code2, 
-  Terminal, 
-  Sliders, 
+import {
+  Play,
+  RotateCcw,
+  CheckCircle2,
+  XCircle,
+  Clock,
+  Zap,
+  ShieldCheck,
+  Code2,
+  Terminal,
+  Sliders,
   AlertTriangle,
   Flame,
   Check,
   ChevronRight,
   Filter,
   Sparkles,
-  Cpu
+  Cpu,
+  Layers,
+  Shield,
+  Radio,
+  FileCheck,
+  FastForward
 } from 'lucide-react';
 import { TestCase } from '../types';
 import { motion, AnimatePresence } from 'motion/react';
@@ -30,6 +35,7 @@ export const TestArena: React.FC = () => {
       id: 'tc-1',
       name: language === 'tr' ? 'Instant Navigations & Partial Prefetching' : 'Instant Navigations & Partial Prefetching',
       category: 'Instant Navigations',
+      stressLevel: 'Hardcore',
       description: language === 'tr'
         ? 'Next.js 16.3 Instant Navigations ve Partial Prefetching ile SPA düzeyinde anlık, sıfır gecikmeli sayfa geçişlerini test eder.'
         : 'Verifies Next.js 16.3 Instant Navigations and Partial Prefetching for zero-latency SPA-like page transitions.',
@@ -63,6 +69,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       id: 'tc-2',
       name: language === 'tr' ? 'Rust React Compiler & Otomatik Memoization' : 'Rust React Compiler & Auto-Memoization',
       category: 'React Compiler',
+      stressLevel: 'Extreme',
       description: language === 'tr'
         ? 'Turbopack içerisine entegre edilen Rust React Compiler ile useMemo/useCallback gerekmeden bileşen yeniden render optimizasyonunu doğrular.'
         : 'Validates automated component render optimization via Turbopack-integrated Rust React Compiler without manual useMemo.',
@@ -71,6 +78,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         { name: language === 'tr' ? 'Rust React Compiler AST dönüşümü <1ms içinde tamamlandı' : 'Rust React Compiler AST transform completed in <1ms', passed: true },
         { name: language === 'tr' ? 'Gereksiz alt bileşen yeniden renderları (re-renders) engellendi' : 'Redundant child component re-renders completely pruned', passed: true },
         { name: language === 'tr' ? 'useMemo ve useCallback bağımlılık dizileri otomatik yönetildi' : 'Hook dependency arrays auto-inferred and memoized', passed: true },
+        { name: language === 'tr' ? 'Reaktif sinyaller bellek sızıntısı olmadan serbest bırakıldı' : 'Reactive signals garbage collected with zero memory leakage', passed: true },
       ],
       codeSample: `// React Compiler in Next.js 16.3 (Rust Port)
 // No manual useMemo or useCallback needed!
@@ -88,145 +96,276 @@ export function UserMetricsCard({ data, filter }: { data: Metric[]; filter: stri
     },
     {
       id: 'tc-3',
-      name: language === 'tr' ? 'Server Action Revalidation Sözleşmesi' : 'Server Action Revalidation Contract',
+      name: language === 'tr' ? 'Server Action Revalidation & Mutex Sözleşmesi' : 'Server Action Revalidation & Mutex Contract',
       category: 'Server Actions',
+      stressLevel: 'Hardcore',
       description: language === 'tr'
-        ? 'revalidatePath() önbellek geçersiz kılma ve sunucu mutasyonunda değişmez durum geçişini doğrular.'
-        : 'Verifies revalidatePath() cache invalidation and immutable state transition on server mutate.',
+        ? 'revalidatePath() önbellek geçersiz kılma, race-condition mutex ve sunucu mutasyonunda değişmez durum geçişini doğrular.'
+        : 'Verifies revalidatePath() cache invalidation, race-condition mutex, and immutable state transition on server mutate.',
       status: 'idle',
       assertions: [
         { name: language === 'tr' ? 'POST isteği action-id başlığını içeriyor' : 'POST request contains action-id header', passed: true },
         { name: language === 'tr' ? 'RSC flight akışı ile 200 durum kodu döndürüldü' : 'Status code returns 200 with RSC flight stream', passed: true },
         { name: language === 'tr' ? 'revalidatePath("/") bayatlamış edge etiketini temizledi' : 'revalidatePath("/") clears stale edge tag', passed: true },
-        { name: language === 'tr' ? 'İstemci arayüzü tam sayfa yenilenmeden güncellendi' : 'Client UI morphs without full page reload', passed: true },
+        { name: language === 'tr' ? 'Eşzamanlı 50 form gönderiminde race-condition engellendi' : 'Concurrent 50 form submits queued with zero collision', passed: true },
       ],
-      codeSample: `'use server'
+      codeSample: `// app/actions.ts (Next.js 16.3 Server Action)
+'use server';
 import { revalidatePath } from 'next/cache';
 
-export async function mutatePayload(formData: FormData) {
-  const token = formData.get('token');
-  if (!token) throw new Error('Missing CSRF token');
-  
-  await db.record.create({ data: { token } });
+export async function updateUserSettings(formData: FormData) {
+  const email = formData.get('email');
+  await db.user.update({ where: { id: 1 }, data: { email } });
   revalidatePath('/dashboard');
-  return { success: true, timestamp: Date.now() };
+  return { success: true };
 }`
     },
     {
       id: 'tc-4',
-      name: language === 'tr' ? 'Streaming SSR & Suspense Sınırları' : 'Streaming SSR & Suspense Boundaries',
+      name: language === 'tr' ? 'Streaming SSR & Suspense Sınırları & Backpressure' : 'Streaming SSR & Suspense Boundaries & Backpressure',
       category: 'Edge Streaming',
+      stressLevel: 'Extreme',
       description: language === 'tr'
-        ? 'Parçalı Transfer-Encoding, yedek iskeletler ve aşamalı HTML hidrasyon zamanlamasını test eder.'
-        : 'Tests chunked Transfer-Encoding, fallback skeletons, and progressive HTML hydration timing.',
+        ? 'Parçalı Transfer-Encoding, yedek iskeletler ve aşamalı HTML hidrasyonu ile Edge backpressure zamanlamasını test eder.'
+        : 'Tests chunked Transfer-Encoding, fallback skeletons, progressive HTML hydration, and Edge backpressure timing.',
       status: 'idle',
       assertions: [
-        { name: language === 'tr' ? 'İlk kabuk (shell) baytları 18ms altında sunuldu' : 'Initial shell bytes rendered under 18ms', passed: true },
-        { name: language === 'tr' ? 'Suspense yedek iskelet değişimi kesintisiz (non-blocking)' : 'Suspense fallback replacement is non-blocking', passed: true },
-        { name: language === 'tr' ? 'Stream denetleyicisi sıfır sızıntı ile sonlandı' : 'Stream controller terminates gracefully with 0 byte leak', passed: true },
+        { name: language === 'tr' ? 'İlk bayt süresi (TTFB) <25ms olarak ölçüldü' : 'Time to First Byte (TTFB) < 25ms', passed: true },
+        { name: language === 'tr' ? 'Suspense iskeletleri 0ms anında teslim edildi' : 'Suspense fallback skeletons delivered in 0ms', passed: true },
+        { name: language === 'tr' ? 'Dinamik veri blokları HTTP/2 stream ile aktarıldı' : 'Dynamic blocks streamed via HTTP/2 Transfer-Encoding', passed: true },
+        { name: language === 'tr' ? 'Yavaş istemcilerde buffer taşması (backpressure) engellendi' : 'Edge backpressure buffer flow control verified', passed: true },
       ],
-      codeSample: `// app/feed/page.tsx
+      codeSample: `// app/dashboard/page.tsx
 import { Suspense } from 'react';
-import { FeedSkeleton, AsyncFeed } from '@/components';
+import { DynamicStats, StatsSkeleton } from './components';
 
-export default function FeedPage() {
+export default function Dashboard() {
   return (
-    <main>
-      <h1>Edge Stream Feed (Next.js 16.3)</h1>
-      <Suspense fallback={<FeedSkeleton />}>
-        <AsyncFeed />
+    <section>
+      <h1>Edge Realtime Dashboard</h1>
+      {/* 0ms Static Shell with Streaming Suspense */}
+      <Suspense fallback={<StatsSkeleton />}>
+        <DynamicStats />
       </Suspense>
-    </main>
+    </section>
   );
 }`
     },
     {
       id: 'tc-5',
-      name: language === 'tr' ? 'App Router Middleware Koruması & Auth' : 'App Router Middleware Guard & Auth Headers',
+      name: language === 'tr' ? 'App Router Middleware Koruması & Strict Auth Headers' : 'App Router Middleware Guard & Strict Auth Headers',
       category: 'Middleware',
+      stressLevel: 'Normal',
       description: language === 'tr'
-        ? 'Edge Middleware yeniden yazma kurallarını, çerez doğrulamasını ve yönlendirme döngülerini test eder.'
-        : 'Evaluates Edge Middleware rewrite rules, cookie validation, and redirect prevention loops.',
+        ? 'Edge Middleware yeniden yazma kurallarını, şifreli çerez doğrulamasını ve yönlendirme döngülerini test eder.'
+        : 'Evaluates Edge Middleware rewrite rules, encrypted cookie validation, and redirect prevention loops.',
       status: 'idle',
       assertions: [
-        { name: language === 'tr' ? 'Middleware isteği layout çalışmasından önce yakalar' : 'Middleware intercepts request before layout execution', passed: true },
-        { name: language === 'tr' ? 'x-request-id ve coğrafi başlıklar enjekte edildi' : 'x-request-id and geo headers are injected', passed: true },
-        { name: language === 'tr' ? 'Yetkisiz rota /auth sayfasına 307 ile yönlendirildi' : 'Unauthorized route redirects to /auth with 307 temporary', passed: true },
+        { name: language === 'tr' ? 'x-forwarded-host başlığı güvenli doğrulandı' : 'x-forwarded-host header verified strictly', passed: true },
+        { name: language === 'tr' ? 'Geçersiz JWT token anında 401 Unauthorized döndürdü' : 'Invalid JWT token immediately returns 401', passed: true },
+        { name: language === 'tr' ? 'Rewrite kuralları sonsuz döngüye girmeden çalıştı' : 'Rewrite rules executed with zero redirect loops', passed: true },
       ],
       codeSample: `// middleware.ts
-import { NextResponse, NextRequest } from 'next/server';
+import { NextResponse } from 'next/server';
+import type { NextRequest } from 'next/server';
 
 export function middleware(request: NextRequest) {
-  const session = request.cookies.get('session_token');
-  if (!session && request.nextUrl.pathname.startsWith('/protected')) {
+  const token = request.cookies.get('session-token');
+  if (!token && request.nextUrl.pathname.startsWith('/admin')) {
     return NextResponse.redirect(new URL('/login', request.url));
   }
-  
-  const response = NextResponse.next();
-  response.headers.set('x-edge-region', process.env.VERCEL_REGION || 'fra1');
-  return response;
+  return NextResponse.next();
 }`
     },
     {
       id: 'tc-6',
       name: language === 'tr' ? 'Turbopack Persistent Cache & Memory Eviction' : 'Turbopack Persistent Cache & Memory Eviction',
       category: 'Turbopack Cache',
+      stressLevel: 'Hardcore',
       description: language === 'tr'
         ? 'Geliştirme ortamında %90 daha az bellek tüketimi ve derlemeler arası kalıcı önbellek doğrulaması.'
         : 'Tests 90% compiler memory eviction during long development sessions and cross-build persistent caching.',
       status: 'idle',
       assertions: [
-        { name: language === 'tr' ? 'Turbopack derleyici bellek tahliyesi (memory eviction) doğrulandı' : 'Turbopack memory eviction reclaimed compiler memory', passed: true },
-        { name: language === 'tr' ? 'Değişmeyen yapay nesneler (artifacts) için önbellekten anında yüklendi' : 'Instant cache hit for unchanged compilation artifacts', passed: true },
-        { name: language === 'tr' ? 'Artımsal derleme süresi <15ms olarak ölçüldü' : 'Incremental compilation latency clocked at <15ms', passed: true },
+        { name: language === 'tr' ? 'Bellek tüketimi 150MB sınırının altında kaldı' : 'Compiler memory footprint capped below 150MB', passed: true },
+        { name: language === 'tr' ? 'Kalıcı disk önbelleği hit oranı %98.4 olarak ölçüldü' : 'Persistent disk cache hit rate @ 98.4%', passed: true },
+        { name: language === 'tr' ? 'Büyük dosya değişikliklerinde HMR <15ms sürdü' : 'HMR update finished in <15ms across large codebase', passed: true },
       ],
-      codeSample: `// next.config.ts (Next.js 16.3)
+      codeSample: `// next.config.ts
 import type { NextConfig } from 'next';
 
 const nextConfig: NextConfig = {
-  turbopack: {
-    // Persistent build caching enabled
-    persistentCaching: true,
-  },
   experimental: {
-    reactCompiler: true,
-    instantNavigations: true,
+    turbopack: {
+      persistentCaching: true,
+      memoryEvictionThreshold: '150MB'
+    }
+  }
+};
+export default nextConfig;`
+    },
+    {
+      id: 'tc-7',
+      name: language === 'tr' ? 'Partial Prerendering (PPR) Shell & Dynamic Holes' : 'Partial Prerendering (PPR) Shell & Dynamic Holes',
+      category: 'PPR & Suspense',
+      stressLevel: 'Extreme',
+      description: language === 'tr'
+        ? 'Statik kabuk HTML anında 0ms teslim edilirken dinamik kişiselleştirilmiş verilerin RSC stream ile aktarılmasını doğrular.'
+        : 'Verifies static shell delivery at 0ms followed by progressive streaming of personalized dynamic RSC chunks.',
+      status: 'idle',
+      assertions: [
+        { name: language === 'tr' ? 'Statik kabuk 0ms TTFB ile CDN edge noktasından teslim edildi' : 'Static shell served instantly with 0ms TTFB from edge CDN', passed: true },
+        { name: language === 'tr' ? 'Dinamik delikler (holes) istemci tarafında hidrasyon hatası üretmedi' : 'Dynamic holes hydrated seamlessly with zero mismatch', passed: true },
+        { name: language === 'tr' ? 'Streaming iptalinde (abort) bellek sızıntısı oluşmadı' : 'AbortController signal clean cleanup verified', passed: true },
+      ],
+      codeSample: `// next.config.ts (Next.js 16.3 PPR Enabled)
+const nextConfig = {
+  experimental: {
+    ppr: 'incremental',
   },
 };
-
 export default nextConfig;`
-    }
+    },
+    {
+      id: 'tc-8',
+      name: language === 'tr' ? 'Server Components Serialization & Flight Binary Stream' : 'Server Components Serialization & Flight Binary Stream',
+      category: 'App Router',
+      stressLevel: 'Hardcore',
+      description: language === 'tr'
+        ? 'Sunucu bileşenlerinden istemciye gönderilen prop serileştirme sınırlarını ve XSS korumasını test eder.'
+        : 'Validates prop serialization boundary enforcement, prototype pollution prevention, and XSS sanitization.',
+      status: 'idle',
+      assertions: [
+        { name: language === 'tr' ? 'Serileştirilemeyen fonksiyonlar istemciye sızdırılmadı' : 'Non-serializable functions prevented from leaking to client', passed: true },
+        { name: language === 'tr' ? 'Prototype pollution saldırı payloadları sanitize edildi' : 'Prototype pollution payload sanitized strictly', passed: true },
+        { name: language === 'tr' ? 'Flight binary stream CRC32 sağlama toplamı doğrulandı' : 'Flight binary stream CRC32 checksum passed', passed: true },
+      ],
+      codeSample: `// app/feed/page.tsx (Server Component)
+export default async function FeedPage() {
+  const posts = await db.post.findMany();
+  // Guaranteed secure serialized payload to Client Component
+  return <ClientFeedView initialPosts={posts} />;
+}`
+    },
+    {
+      id: 'tc-9',
+      name: language === 'tr' ? 'Async Context & Header / Cookie İzolasyonu' : 'Async Context & Header / Cookie Isolation',
+      category: 'Async Context',
+      stressLevel: 'Extreme',
+      description: language === 'tr'
+        ? 'Node.js 24 AsyncLocalStorage ile eşzamanlı isteklerde header/cookie karışmasının (leakage) imkansızlığını doğrular.'
+        : 'Proves total request isolation using Node.js 24 AsyncLocalStorage to prevent cross-request header/cookie leakage.',
+      status: 'idle',
+      assertions: [
+        { name: language === 'tr' ? 'Eşzamanlı 10.000 istekte sıfır context karışması' : 'Zero context leakage across 10,000 concurrent requests', passed: true },
+        { name: language === 'tr' ? 'cookies() ve headers() metodları her istek için izole' : 'cookies() & headers() scoped strictly per request lifecycle', passed: true },
+        { name: language === 'tr' ? 'V8 AsyncLocalStorage overhead <0.02ms' : 'V8 AsyncLocalStorage execution overhead <0.02ms', passed: true },
+      ],
+      codeSample: `// Next.js 16.3 AsyncLocalStorage Context
+import { headers, cookies } from 'next/headers';
+
+export async function getUserSession() {
+  const cookieStore = await cookies();
+  const token = cookieStore.get('auth_token');
+  return { authenticated: Boolean(token) };
+}`
+    },
+    {
+      id: 'tc-10',
+      name: language === 'tr' ? 'Server Actions Strict CSRF Origin Doğrulaması' : 'Server Actions Strict CSRF Origin Guard',
+      category: 'Security & CSRF',
+      stressLevel: 'Hardcore',
+      description: language === 'tr'
+        ? 'Next.js 16.3 yerleşik Origin/Fetch-Metadata koruması ile yetkisiz çapraz site isteklerinin reddedilmesini test eder.'
+        : 'Validates built-in Origin and Fetch-Metadata validation rejecting unauthorized cross-site action invocations.',
+      status: 'idle',
+      assertions: [
+        { name: language === 'tr' ? 'Bilinmeyen Origin başlığı taşıyan POST istekleri 403 ile engellendi' : 'Mismatched Origin header POST rejected with 403 Forbidden', passed: true },
+        { name: language === 'tr' ? 'Sec-Fetch-Site: cross-site koruması doğrulandı' : 'Sec-Fetch-Site cross-site protection verified', passed: true },
+        { name: language === 'tr' ? 'SameSite=Lax çerez politikası geçerli kılındı' : 'SameSite=Lax cookie attribute enforced across state', passed: true },
+      ],
+      codeSample: `// Next.js 16.3 Automatic Origin & CSRF Guard
+// Any foreign Origin trigger will automatically abort with HTTP 403 Forbidden
+'use server';
+
+export async function sensitiveFinancialTransfer(amount: number) {
+  // Built-in CSRF validation executed before this function is invoked
+  return { status: 'approved', timestamp: Date.now() };
+}`
+    },
+    {
+      id: 'tc-11',
+      name: language === 'tr' ? 'Suspense Waterfall Pruning & Preload Pattern' : 'Suspense Waterfall Pruning & Preload Pattern',
+      category: 'PPR & Suspense',
+      stressLevel: 'Normal',
+      description: language === 'tr'
+        ? 'İç içe veri çekimlerinde şelale (waterfall) gecikmelerini Promise.all ve Suspense paralel preloading ile yok eder.'
+        : 'Prunes nested data fetching waterfalls using parallel Suspense boundaries and preloading contracts.',
+      status: 'idle',
+      assertions: [
+        { name: language === 'tr' ? 'Şelale gecikmesi (waterfall delay) 0ms seviyesine indirildi' : 'Waterfall latency pruned from 450ms down to 45ms', passed: true },
+        { name: language === 'tr' ? 'Paralel fetch istekleri tek ağ gidiş-dönüşünde (RTT) birleştirildi' : 'Parallel queries consolidated into single round-trip', passed: true },
+      ],
+      codeSample: `// app/user/[id]/page.tsx
+export default async function UserProfile({ params }: { params: { id: string } }) {
+  // Parallel preloading initiated without blocking render
+  const userPromise = getUser(params.id);
+  const postsPromise = getUserPosts(params.id);
+
+  const [user, posts] = await Promise.all([userPromise, postsPromise]);
+  return <ProfileLayout user={user} posts={posts} />;
+}`
+    },
+    {
+      id: 'tc-12',
+      name: language === 'tr' ? 'Zero-Runtime CSS & Style Injection Stres Testi' : 'Zero-Runtime CSS & Style Injection Stress Test',
+      category: 'Turbopack Cache',
+      stressLevel: 'Hardcore',
+      description: language === 'tr'
+        ? 'Tailwind CSS v4 Oxide motorunun binlerce dinamik class oluştururken 0 runtime overhead sağladığını doğrular.'
+        : 'Confirms zero runtime overhead while Tailwind CSS v4 Oxide engine handles thousands of dynamic atomic utility classes.',
+      status: 'idle',
+      assertions: [
+        { name: language === 'tr' ? 'CSS boyutu 14KB gzip ile sınırlandırıldı' : 'Production CSS bundle bounded to 14KB gzip', passed: true },
+        { name: language === 'tr' ? 'JavaScript runtime içine CSS parse maliyeti yüklenmedi (0ms)' : 'Zero runtime JS overhead for CSS styling parsing', passed: true },
+        { name: language === 'tr' ? 'Oxide Rust parser hızı 420.000 satır/sn olarak ölçüldü' : 'Oxide Rust parser throughput @ 420,000 lines/sec', passed: true },
+      ],
+      codeSample: `// src/index.css (Tailwind CSS v4 Oxide)
+@import "tailwindcss";
+
+/* Zero-runtime CSS processed by Rust Turbopack in <2ms */
+@theme {
+  --color-brand-emerald: #10b981;
+}`
+    },
   ];
 
   const [tests, setTests] = useState<TestCase[]>(getInitialTestSuite);
   const [selectedTestId, setSelectedTestId] = useState<string>('tc-1');
-  const [selectedCategory, setSelectedCategory] = useState<string>('All');
-  const [isRunningAll, setIsRunningAll] = useState<boolean>(false);
-  const [consoleLogs, setConsoleLogs] = useState<string[]>([
-    '⚡ Next.js Test Arena v16.3.3 (Node 24 LTS & Rust Turbopack Engine) ready.',
-    '✓ Environment: Headless Edge Runtime & Instant Navigations sandbox initialized.',
-    '✓ Compiler: Rust React Compiler AST optimization enabled.',
+  const [isRunningAll, setIsRunningAll] = useState(false);
+  const [logs, setLogs] = useState<string[]>([
+    '⚡ Turbopack v16.3.3 Rust Engine initialized (16 workers ready)',
+    '✓ Environment: Node.js 24 LTS (Krypton V8 13.4)',
+    '✓ React Compiler (Rust): Enabled with persistent AST caching',
+    'ℹ Ready to execute extreme stress test suite...',
   ]);
-
-  const categories = ['All', 'Instant Navigations', 'React Compiler', 'Server Actions', 'Edge Streaming', 'Middleware', 'Turbopack Cache'];
+  const [selectedCategory, setSelectedCategory] = useState<string>('all');
 
   const selectedTest = tests.find((t) => t.id === selectedTestId) || tests[0];
-
-  const logToConsole = (msg: string) => {
-    const timestamp = new Date().toLocaleTimeString();
-    setConsoleLogs((prev) => [`[${timestamp}] ${msg}`, ...prev.slice(0, 15)]);
-  };
 
   const runSingleTest = async (testId: string) => {
     setTests((prev) =>
       prev.map((t) => (t.id === testId ? { ...t, status: 'running' } : t))
     );
 
-    const testItem = tests.find((t) => t.id === testId);
-    logToConsole(language === 'tr' ? `▶ Koşuluyor: "${testItem?.name}" [${testItem?.category}]...` : `▶ Running: "${testItem?.name}" [${testItem?.category}]...`);
+    const targetTest = tests.find((t) => t.id === testId);
+    setLogs((prev) => [
+      `▶ [${new Date().toLocaleTimeString()}] Executing: ${targetTest?.name}...`,
+      ...prev,
+    ]);
 
-    const delay = Math.floor(Math.random() * 250) + 150;
-    await new Promise((resolve) => setTimeout(resolve, delay));
+    const execTime = Math.floor(Math.random() * 25) + 8;
+    await new Promise((resolve) => setTimeout(resolve, 350 + execTime * 5));
 
     setTests((prev) =>
       prev.map((t) =>
@@ -234,330 +373,428 @@ export default nextConfig;`
           ? {
               ...t,
               status: 'passed',
-              executionTime: delay,
+              executionTime: execTime,
+              assertions: t.assertions.map((a) => ({ ...a, passed: true })),
             }
           : t
       )
     );
 
-    logToConsole(language === 'tr' ? `✔ Başarılı: "${testItem?.name}" (${delay}ms) - Tüm kriterler doğrulandı.` : `✔ Passed: "${testItem?.name}" (${delay}ms) - All assertions verified.`);
+    setLogs((prev) => [
+      `✓ [${new Date().toLocaleTimeString()}] PASSED: ${targetTest?.name} in ${execTime}ms (${targetTest?.assertions.length} assertions verified)`,
+      ...prev,
+    ]);
   };
 
   const runAllTests = async () => {
     setIsRunningAll(true);
-    logToConsole(language === 'tr' ? '🚀 Tam test paketi başlatılıyor (6 Modül - Next.js 16.3)...' : '🚀 Starting full test suite execution (6 Modules - Next.js 16.3)...');
-    
+    setLogs((prev) => [
+      `🔥 [${new Date().toLocaleTimeString()}] Starting HARDCORE NEXT.JS 16.3 TEST SUITE (12 Tests / 16 Workers)...`,
+      ...prev,
+    ]);
+
+    // Reset status to running
     setTests((prev) => prev.map((t) => ({ ...t, status: 'running' })));
 
     for (let i = 0; i < tests.length; i++) {
-      const current = tests[i];
-      const execTime = Math.floor(Math.random() * 200) + 90;
-      await new Promise((res) => setTimeout(res, execTime));
+      const currentTest = tests[i];
+      const execTime = Math.floor(Math.random() * 22) + 6;
+      await new Promise((resolve) => setTimeout(resolve, 140));
 
       setTests((prev) =>
-        prev.map((t) =>
-          t.id === current.id
-            ? { ...t, status: 'passed', executionTime: execTime }
+        prev.map((t, idx) =>
+          idx === i
+            ? {
+                ...t,
+                status: 'passed',
+                executionTime: execTime,
+                assertions: t.assertions.map((a) => ({ ...a, passed: true })),
+              }
             : t
         )
       );
-      logToConsole(`✔ [${i + 1}/${tests.length}] ${current.name} -> OK (${execTime}ms)`);
+
+      setLogs((prev) => [
+        `✓ [${new Date().toLocaleTimeString()}] (${i + 1}/${tests.length}) PASSED: ${currentTest.name} [${execTime}ms]`,
+        ...prev,
+      ]);
     }
 
-    logToConsole(language === 'tr' ? '✨ Tam Paket Başarılı: 6/6 geçti. 0 hata (Next.js 16.3 Verified).' : '✨ Full Suite Complete: 6/6 passed. 0 errors (Next.js 16.3 Verified).');
+    setLogs((prev) => [
+      `🎉 [${new Date().toLocaleTimeString()}] ALL 12 TESTS PASSED! Next.js 16.3 Architecture is 100% Solid & Compliant.`,
+      ...prev,
+    ]);
     setIsRunningAll(false);
   };
 
-  const resetSuite = () => {
+  const resetTests = () => {
     setTests(getInitialTestSuite());
-    logToConsole(language === 'tr' ? '↺ Test paketi sıfırlandı.' : '↺ Test suite state reset to idle.');
+    setLogs([
+      '⚡ Test Arena state reset.',
+      'ℹ All 12 test cases ready for execution.',
+    ]);
   };
 
-  const filteredTests = selectedCategory === 'All'
-    ? tests
-    : tests.filter((t) => t.category === selectedCategory);
-
   const passedCount = tests.filter((t) => t.status === 'passed').length;
-  const totalExecTime = tests.reduce((acc, curr) => acc + (curr.executionTime || 0), 0);
+  const totalAssertions = tests.reduce((acc, t) => acc + t.assertions.length, 0);
+  const passedAssertions = tests.reduce(
+    (acc, t) =>
+      acc + (t.status === 'passed' ? t.assertions.length : 0),
+    0
+  );
+
+  const categories = ['all', ...Array.from(new Set(tests.map((t) => t.category)))];
+
+  const filteredTests = selectedCategory === 'all' 
+    ? tests 
+    : tests.filter((t) => t.category === selectedCategory);
 
   return (
     <div className="space-y-6">
-      {/* Top Bento Metrics Row */}
+      {/* Top Bento Metrics Grid */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        {/* Metric 1 */}
-        <div className="bg-white dark:bg-neutral-900 border border-zinc-200 dark:border-neutral-800 rounded-3xl p-5 shadow-sm flex flex-col justify-between">
-          <div className="flex items-center justify-between text-zinc-500 dark:text-neutral-500 text-xs font-bold uppercase tracking-wider">
+        {/* Pass Rate Metric */}
+        <div className="p-4 rounded-3xl bg-white dark:bg-neutral-900 border border-zinc-200 dark:border-neutral-800 shadow-2xs flex flex-col justify-between">
+          <div className="flex items-center justify-between text-xs font-mono uppercase text-zinc-500 dark:text-neutral-400">
             <span>{t('arena.suiteStatus')}</span>
-            <CheckCircle2 className="w-4 h-4 text-emerald-500" />
+            <CheckCircle2 size={16} className="text-emerald-500" />
           </div>
-          <div className="my-2">
-            <div className="text-3xl font-bold font-mono text-zinc-900 dark:text-white">
-              {passedCount} / {tests.length}
-            </div>
-            <p className="text-xs text-zinc-500 dark:text-neutral-400 font-medium mt-0.5">
-              {passedCount === tests.length ? t('hero.allPassed') : `${passedCount} ${t('arena.passed')}`}
-            </p>
+          <div className="mt-3 flex items-baseline gap-2">
+            <span className="text-3xl font-black text-zinc-900 dark:text-white tracking-tight">
+              {passedCount}/{tests.length}
+            </span>
+            <span className="text-xs font-mono font-bold text-emerald-600 dark:text-emerald-400">
+              ({Math.round((passedCount / tests.length) * 100)}%)
+            </span>
           </div>
-          <div className="w-full bg-zinc-100 dark:bg-neutral-800 h-1.5 rounded-full overflow-hidden">
-            <div
-              className="bg-emerald-500 h-full transition-all duration-500"
-              style={{ width: `${(passedCount / tests.length) * 100}%` }}
-            ></div>
+          <div className="mt-2 text-[11px] text-zinc-400 dark:text-neutral-500 font-mono">
+            {t('arena.assertionHealth')}: {passedAssertions}/{totalAssertions}
           </div>
         </div>
 
-        {/* Metric 2 */}
-        <div className="bg-white dark:bg-neutral-900 border border-zinc-200 dark:border-neutral-800 rounded-3xl p-5 shadow-sm flex flex-col justify-between">
-          <div className="flex items-center justify-between text-zinc-500 dark:text-neutral-500 text-xs font-bold uppercase tracking-wider">
-            <span>{t('arena.passRate')}</span>
-            <Flame className="w-4 h-4 text-amber-500" />
+        {/* Parallel Execution Threads */}
+        <div className="p-4 rounded-3xl bg-white dark:bg-neutral-900 border border-zinc-200 dark:border-neutral-800 shadow-2xs flex flex-col justify-between">
+          <div className="flex items-center justify-between text-xs font-mono uppercase text-zinc-500 dark:text-neutral-400">
+            <span>Turbopack Workers</span>
+            <Cpu size={16} className="text-sky-500" />
           </div>
-          <div className="my-2">
-            <div className="text-3xl font-bold font-mono text-emerald-500">
-              {Math.round((passedCount / tests.length) * 100)}%
-            </div>
-            <p className="text-xs text-zinc-500 dark:text-neutral-400 font-medium mt-0.5">
-              {language === 'tr' ? 'Sıfır Regresyon' : 'Zero Regression'}
-            </p>
+          <div className="mt-3 flex items-baseline gap-2">
+            <span className="text-3xl font-black text-zinc-900 dark:text-white tracking-tight">
+              16 Threads
+            </span>
+            <span className="text-xs font-mono font-bold text-sky-600 dark:text-sky-400">
+              Rust Core
+            </span>
           </div>
-          <div className="text-[11px] font-mono text-zinc-400 dark:text-neutral-500">
-            Node.js 24 • V8 v13.4
-          </div>
-        </div>
-
-        {/* Metric 3 */}
-        <div className="bg-white dark:bg-neutral-900 border border-zinc-200 dark:border-neutral-800 rounded-3xl p-5 shadow-sm flex flex-col justify-between">
-          <div className="flex items-center justify-between text-zinc-500 dark:text-neutral-500 text-xs font-bold uppercase tracking-wider">
-            <span>{t('arena.execTime')}</span>
-            <Clock className="w-4 h-4 text-cyan-500" />
-          </div>
-          <div className="my-2">
-            <div className="text-3xl font-bold font-mono text-zinc-900 dark:text-white">
-              {totalExecTime} <span className="text-sm font-sans text-zinc-500 font-normal">ms</span>
-            </div>
-            <p className="text-xs text-zinc-500 dark:text-neutral-400 font-medium mt-0.5">
-              {t('arena.turbopackActive')}
-            </p>
-          </div>
-          <div className="text-[11px] font-mono text-zinc-400 dark:text-neutral-500">
-            {t('arena.avgPerTest')}: {passedCount > 0 ? Math.round(totalExecTime / passedCount) : 0}ms
-          </div>
-        </div>
-
-        {/* Metric 4 */}
-        <div className="bg-white dark:bg-neutral-900 border border-zinc-200 dark:border-neutral-800 rounded-3xl p-5 shadow-sm flex flex-col justify-between">
-          <div className="flex items-center justify-between text-zinc-500 dark:text-neutral-500 text-xs font-bold uppercase tracking-wider">
-            <span>{t('arena.assertionHealth')}</span>
-            <ShieldCheck className="w-4 h-4 text-emerald-500" />
-          </div>
-          <div className="my-2">
-            <div className="text-3xl font-bold font-mono text-zinc-900 dark:text-white">
-              22 / 22
-            </div>
-            <p className="text-xs text-zinc-500 dark:text-neutral-400 font-medium mt-0.5">
-              {t('arena.zeroFlaky')}
-            </p>
-          </div>
-          <div className="text-[11px] font-mono text-zinc-400 dark:text-neutral-500">
+          <div className="mt-2 text-[11px] text-zinc-400 dark:text-neutral-500 font-mono">
             {t('arena.strictTs')}
           </div>
         </div>
+
+        {/* Average Latency */}
+        <div className="p-4 rounded-3xl bg-white dark:bg-neutral-900 border border-zinc-200 dark:border-neutral-800 shadow-2xs flex flex-col justify-between">
+          <div className="flex items-center justify-between text-xs font-mono uppercase text-zinc-500 dark:text-neutral-400">
+            <span>{t('arena.execTime')}</span>
+            <Clock size={16} className="text-indigo-500" />
+          </div>
+          <div className="mt-3 flex items-baseline gap-2">
+            <span className="text-3xl font-black text-zinc-900 dark:text-white tracking-tight">
+              ~14 ms
+            </span>
+            <span className="text-xs font-mono font-bold text-indigo-600 dark:text-indigo-400">
+              Instant
+            </span>
+          </div>
+          <div className="mt-2 text-[11px] text-zinc-400 dark:text-neutral-500 font-mono">
+            {t('arena.turbopackActive')}
+          </div>
+        </div>
+
+        {/* Flaky Tests Guard */}
+        <div className="p-4 rounded-3xl bg-white dark:bg-neutral-900 border border-zinc-200 dark:border-neutral-800 shadow-2xs flex flex-col justify-between">
+          <div className="flex items-center justify-between text-xs font-mono uppercase text-zinc-500 dark:text-neutral-400">
+            <span>Flaky Guard</span>
+            <ShieldCheck size={16} className="text-emerald-500" />
+          </div>
+          <div className="mt-3 flex items-baseline gap-2">
+            <span className="text-3xl font-black text-emerald-600 dark:text-emerald-400 tracking-tight">
+              0.00%
+            </span>
+            <span className="text-xs font-mono font-bold text-zinc-500 dark:text-neutral-400">
+              Deterministic
+            </span>
+          </div>
+          <div className="mt-2 text-[11px] text-zinc-400 dark:text-neutral-500 font-mono">
+            {t('arena.zeroFlaky')}
+          </div>
+        </div>
       </div>
 
-      {/* Control Banner */}
-      <div className="bg-white dark:bg-neutral-900 rounded-3xl p-6 border border-zinc-200 dark:border-neutral-800 shadow-sm flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-        <div>
-          <span className="text-xs font-bold text-zinc-500 dark:text-neutral-500 uppercase tracking-widest flex items-center gap-1.5 mb-1">
-            <Cpu className="w-3.5 h-3.5 text-emerald-500" />
-            {t('arena.suiteControls')}
+      {/* Suite Actions & Category Filters */}
+      <div className="p-4 sm:p-5 rounded-3xl bg-white dark:bg-neutral-900 border border-zinc-200 dark:border-neutral-800 shadow-2xs flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+        {/* Category Pills */}
+        <div className="flex flex-wrap items-center gap-1.5 overflow-x-auto pb-1 max-w-full">
+          <span className="text-xs font-mono font-bold text-zinc-400 dark:text-neutral-500 mr-1 flex items-center gap-1">
+            <Filter size={12} />
+            {t('arena.filterAll')}:
           </span>
-          <h2 className="text-xl sm:text-2xl font-bold text-zinc-900 dark:text-white">
-            Next.js 16.3 Full-Stack Engine Verification
-          </h2>
+          {categories.map((cat) => (
+            <button
+              key={cat}
+              onClick={() => setSelectedCategory(cat)}
+              className={`px-3 py-1 rounded-xl text-xs font-mono font-semibold transition-all ${
+                selectedCategory === cat
+                  ? 'bg-zinc-900 text-white dark:bg-neutral-700 dark:text-white shadow-2xs'
+                  : 'bg-zinc-100 dark:bg-neutral-800/80 text-zinc-600 dark:text-neutral-400 hover:bg-zinc-200 dark:hover:bg-neutral-700'
+              }`}
+            >
+              {cat === 'all' ? t('arena.filterAll') : cat}
+            </button>
+          ))}
         </div>
 
-        <div className="flex items-center gap-3 w-full sm:w-auto">
+        {/* Action Buttons */}
+        <div className="flex items-center gap-2 shrink-0 w-full md:w-auto justify-end">
           <button
-            disabled={isRunningAll}
+            id="arena-run-all-btn"
             onClick={runAllTests}
-            className="flex-1 sm:flex-initial px-5 py-2.5 bg-emerald-500 hover:bg-emerald-400 disabled:opacity-50 text-neutral-950 rounded-full font-bold text-xs flex items-center justify-center gap-2 transition-all shadow-sm active:scale-95 cursor-pointer"
+            disabled={isRunningAll}
+            className="flex-1 md:flex-none flex items-center justify-center gap-2 px-5 py-2.5 rounded-2xl bg-emerald-600 hover:bg-emerald-500 text-white font-mono text-xs font-bold shadow-xs hover:shadow-emerald-500/20 transition-all disabled:opacity-50"
           >
-            <Play className="w-4 h-4 fill-current" />
-            <span>{isRunningAll ? t('arena.running') : t('arena.runAll')}</span>
+            {isRunningAll ? (
+              <>
+                <motion.div
+                  animate={{ rotate: 360 }}
+                  transition={{ repeat: Infinity, duration: 1, ease: 'linear' }}
+                >
+                  <Zap size={15} />
+                </motion.div>
+                <span>{t('arena.running')}</span>
+              </>
+            ) : (
+              <>
+                <Play size={15} className="fill-current" />
+                <span>{t('arena.runAll')}</span>
+              </>
+            )}
           </button>
 
           <button
-            onClick={resetSuite}
-            className="px-4 py-2.5 bg-zinc-100 dark:bg-neutral-800 hover:bg-zinc-200 dark:hover:bg-neutral-700 text-zinc-700 dark:text-neutral-300 rounded-full font-semibold text-xs flex items-center gap-1.5 transition-colors border border-zinc-200 dark:border-neutral-700 cursor-pointer"
+            id="arena-reset-btn"
+            onClick={resetTests}
+            disabled={isRunningAll}
+            className="flex items-center justify-center gap-1.5 px-4 py-2.5 rounded-2xl bg-zinc-100 dark:bg-neutral-800 hover:bg-zinc-200 dark:hover:bg-neutral-700 text-zinc-700 dark:text-neutral-300 font-mono text-xs font-semibold transition-all disabled:opacity-50"
           >
-            <RotateCcw className="w-3.5 h-3.5" />
-            <span>{t('arena.reset')}</span>
+            <RotateCcw size={14} />
+            <span className="hidden sm:inline">{t('arena.reset')}</span>
           </button>
         </div>
       </div>
 
-      {/* Main Two-Column Layout */}
+      {/* Main Two-Column Bento Layout */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
-        {/* Left Col: Test Module List (5 cols) */}
-        <div className="lg:col-span-5 space-y-4">
-          {/* Category Filter Pills */}
-          <div className="flex items-center gap-1.5 overflow-x-auto pb-1 scrollbar-none">
-            {categories.map((cat) => (
-              <button
-                key={cat}
-                onClick={() => setSelectedCategory(cat)}
-                className={`whitespace-nowrap px-3 py-1 text-xs rounded-full font-semibold transition-all cursor-pointer ${
-                  selectedCategory === cat
-                    ? 'bg-zinc-900 text-white dark:bg-white dark:text-neutral-950 shadow-xs'
-                    : 'bg-zinc-100 dark:bg-neutral-900 text-zinc-600 dark:text-neutral-400 hover:bg-zinc-200 dark:hover:bg-neutral-800 border border-zinc-200 dark:border-neutral-800'
-                }`}
-              >
-                {cat === 'All' ? `${t('notes.all')} (${tests.length})` : cat}
-              </button>
-            ))}
+        {/* Left Column: 12 Test Cases List (5 cols) */}
+        <div className="lg:col-span-5 space-y-3">
+          <div className="flex items-center justify-between px-2 text-xs font-mono font-bold uppercase text-zinc-500 dark:text-neutral-400">
+            <span>{t('arena.testModules')}</span>
+            <span>{filteredTests.length} {t('arena.scenarios')}</span>
           </div>
 
-          {/* Test Cards List */}
-          <div className="space-y-3">
-            {filteredTests.map((test) => (
-              <div
-                key={test.id}
-                onClick={() => setSelectedTestId(test.id)}
-                className={`p-4 rounded-2xl border transition-all cursor-pointer ${
-                  selectedTestId === test.id
-                    ? 'bg-white dark:bg-neutral-900 border-emerald-500 dark:border-emerald-500 shadow-md ring-1 ring-emerald-500/20'
-                    : 'bg-white/80 dark:bg-neutral-900/60 border-zinc-200 dark:border-neutral-800/80 hover:border-zinc-300 dark:hover:border-neutral-700'
-                }`}
-              >
-                <div className="flex items-start justify-between gap-3">
-                  <div className="space-y-1">
-                    <div className="flex items-center gap-2">
-                      <span className="px-2 py-0.5 rounded-md text-[10px] font-mono font-bold bg-zinc-100 dark:bg-neutral-800 text-zinc-600 dark:text-neutral-400 border border-zinc-200 dark:border-neutral-700">
-                        {test.category}
-                      </span>
-                      {test.status === 'passed' && (
-                        <span className="px-2 py-0.5 rounded-md text-[10px] font-mono font-bold bg-emerald-500/10 text-emerald-500 border border-emerald-500/20 flex items-center gap-1">
-                          <Check className="w-3 h-3" />
-                          <span>{test.executionTime}ms</span>
+          <div className="space-y-2 max-h-[700px] overflow-y-auto pr-1 scrollbar-thin">
+            {filteredTests.map((tc) => {
+              const isSelected = tc.id === selectedTestId;
+              return (
+                <div
+                  key={tc.id}
+                  id={`test-case-item-${tc.id}`}
+                  onClick={() => setSelectedTestId(tc.id)}
+                  className={`p-3.5 rounded-2xl border transition-all cursor-pointer select-none group ${
+                    isSelected
+                      ? 'bg-zinc-900 text-white dark:bg-neutral-800/95 dark:text-white border-zinc-700 shadow-md ring-1 ring-emerald-500/50'
+                      : 'bg-white dark:bg-neutral-900 text-zinc-800 dark:text-neutral-200 border-zinc-200 dark:border-neutral-800 hover:border-zinc-300 dark:hover:border-neutral-700 hover:bg-zinc-50 dark:hover:bg-neutral-800/50'
+                  }`}
+                >
+                  <div className="flex items-start justify-between gap-2">
+                    <div className="space-y-1 min-w-0">
+                      <div className="flex items-center gap-2">
+                        <span
+                          className={`text-[9px] font-mono font-bold px-1.5 py-0.5 rounded uppercase ${
+                            isSelected
+                              ? 'bg-zinc-800 text-zinc-300 border border-zinc-700'
+                              : 'bg-zinc-100 dark:bg-neutral-800 text-zinc-500 dark:text-neutral-400 border border-zinc-200 dark:border-neutral-700'
+                          }`}
+                        >
+                          {tc.category}
                         </span>
+
+                        {tc.stressLevel && (
+                          <span
+                            className={`text-[9px] font-mono font-bold px-1.5 py-0.5 rounded uppercase ${
+                              tc.stressLevel === 'Extreme'
+                                ? 'bg-rose-500/20 text-rose-400 border border-rose-500/40'
+                                : tc.stressLevel === 'Hardcore'
+                                ? 'bg-amber-500/20 text-amber-400 border border-amber-500/40'
+                                : 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/40'
+                            }`}
+                          >
+                            {tc.stressLevel}
+                          </span>
+                        )}
+                      </div>
+
+                      <h4 className="font-semibold text-xs sm:text-sm tracking-tight truncate">
+                        {tc.name}
+                      </h4>
+                    </div>
+
+                    <div className="shrink-0 pt-0.5">
+                      {tc.status === 'passed' && (
+                        <CheckCircle2 size={18} className="text-emerald-500" />
                       )}
-                      {test.status === 'running' && (
-                        <span className="px-2 py-0.5 rounded-md text-[10px] font-mono font-bold bg-amber-500/10 text-amber-500 border border-amber-500/20 animate-pulse">
-                          {t('arena.running')}
-                        </span>
+                      {tc.status === 'running' && (
+                        <motion.div
+                          animate={{ rotate: 360 }}
+                          transition={{ repeat: Infinity, duration: 0.8, ease: 'linear' }}
+                        >
+                          <Zap size={18} className="text-amber-500" />
+                        </motion.div>
+                      )}
+                      {tc.status === 'idle' && (
+                        <div className="w-4 h-4 rounded-full border border-dashed border-zinc-400 dark:border-neutral-600" />
                       )}
                     </div>
-                    <h3 className="text-sm font-bold text-zinc-900 dark:text-white leading-snug">
-                      {test.name}
-                    </h3>
                   </div>
 
-                  <ChevronRight
-                    className={`w-4 h-4 flex-shrink-0 transition-transform ${
-                      selectedTestId === test.id ? 'text-emerald-500 translate-x-0.5' : 'text-zinc-400 dark:text-neutral-600'
+                  <p
+                    className={`mt-2 text-xs line-clamp-2 leading-relaxed ${
+                      isSelected
+                        ? 'text-zinc-300 dark:text-neutral-300'
+                        : 'text-zinc-500 dark:text-neutral-400'
                     }`}
-                  />
-                </div>
+                  >
+                    {tc.description}
+                  </p>
 
-                <p className="text-xs text-zinc-500 dark:text-neutral-400 line-clamp-2 mt-2 leading-relaxed">
-                  {test.description}
-                </p>
-              </div>
-            ))}
+                  {tc.executionTime && (
+                    <div className="mt-2.5 flex items-center justify-between text-[10px] font-mono text-zinc-400 dark:text-neutral-500">
+                      <span>Latency: {tc.executionTime}ms</span>
+                      <span className="text-emerald-400 font-bold">{tc.assertions.length} Assertions</span>
+                    </div>
+                  )}
+                </div>
+              );
+            })}
           </div>
         </div>
 
-        {/* Right Col: Test Inspector & Runner Stream (7 cols) */}
-        <div className="lg:col-span-7 space-y-5">
-          {/* Selected Test Detail Bento */}
-          <div className="bg-white dark:bg-neutral-900 rounded-3xl p-6 sm:p-7 border border-zinc-200 dark:border-neutral-800 shadow-sm space-y-5">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-zinc-100 dark:border-neutral-800">
+        {/* Right Column: Selected Test Details, Assertions, Code & Live Logs (7 cols) */}
+        <div className="lg:col-span-7 space-y-4">
+          {/* Test Card Header & Run Trigger */}
+          <div className="p-5 rounded-3xl bg-white dark:bg-neutral-900 border border-zinc-200 dark:border-neutral-800 shadow-2xs space-y-4">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
               <div>
-                <span className="text-[10px] font-mono font-bold uppercase tracking-widest text-emerald-600 dark:text-emerald-500">
-                  {selectedTest.category} &bull; Next.js 16.3
-                </span>
-                <h3 className="text-lg sm:text-xl font-bold text-zinc-900 dark:text-white mt-0.5">
+                <div className="flex items-center gap-2">
+                  <span className="text-xs font-mono font-bold text-emerald-600 dark:text-emerald-400 uppercase">
+                    {selectedTest.category}
+                  </span>
+                  <span className="text-zinc-300 dark:text-neutral-700">•</span>
+                  <span className="text-xs font-mono text-zinc-500 dark:text-neutral-400">
+                    ID: {selectedTest.id}
+                  </span>
+                </div>
+                <h3 className="text-lg font-bold text-zinc-900 dark:text-white tracking-tight mt-0.5">
                   {selectedTest.name}
                 </h3>
               </div>
 
               <button
+                id="run-single-test-btn"
                 onClick={() => runSingleTest(selectedTest.id)}
                 disabled={selectedTest.status === 'running'}
-                className="px-4 py-2 bg-emerald-500 hover:bg-emerald-400 disabled:opacity-50 text-neutral-950 rounded-full font-bold text-xs flex items-center gap-1.5 transition-all shadow-xs cursor-pointer self-start sm:self-auto"
+                className="flex items-center justify-center gap-2 px-4 py-2 rounded-xl bg-zinc-900 hover:bg-zinc-800 dark:bg-neutral-800 dark:hover:bg-neutral-700 text-white text-xs font-mono font-bold shadow-xs transition-all disabled:opacity-50 shrink-0"
               >
-                <Play className="w-3.5 h-3.5 fill-current" />
-                <span>{selectedTest.status === 'running' ? t('arena.running') : t('arena.runTest')}</span>
+                {selectedTest.status === 'running' ? (
+                  <>
+                    <Zap size={14} className="animate-spin text-amber-400" />
+                    <span>{t('arena.running')}</span>
+                  </>
+                ) : (
+                  <>
+                    <Play size={14} className="fill-current text-emerald-400" />
+                    <span>{t('arena.runTest')}</span>
+                  </>
+                )}
               </button>
             </div>
 
-            {/* Description */}
-            <p className="text-xs sm:text-sm text-zinc-600 dark:text-neutral-300 leading-relaxed">
+            <p className="text-xs text-zinc-600 dark:text-neutral-300 leading-relaxed bg-zinc-50 dark:bg-neutral-950 p-3 rounded-2xl border border-zinc-100 dark:border-neutral-800">
               {selectedTest.description}
             </p>
 
             {/* Assertions Checklist */}
-            <div className="space-y-2.5">
-              <h4 className="text-xs font-bold uppercase tracking-wider text-zinc-500 dark:text-neutral-400">
+            <div className="space-y-2">
+              <h5 className="text-xs font-mono font-bold uppercase tracking-wider text-zinc-500 dark:text-neutral-400">
                 {t('arena.assertions')}
-              </h4>
-              <div className="space-y-2">
-                {selectedTest.assertions.map((assertion, idx) => (
+              </h5>
+              <div className="grid grid-cols-1 gap-2">
+                {selectedTest.assertions.map((assertion, aIdx) => (
                   <div
-                    key={idx}
-                    className="p-3 rounded-2xl bg-zinc-50 dark:bg-neutral-950/80 border border-zinc-200 dark:border-neutral-800/80 flex items-center justify-between gap-3 text-xs"
+                    key={aIdx}
+                    className="flex items-start gap-2.5 p-2.5 rounded-xl bg-zinc-50 dark:bg-neutral-950/60 border border-zinc-200/60 dark:border-neutral-800 text-xs font-mono text-zinc-700 dark:text-neutral-300"
                   >
-                    <div className="flex items-center gap-2 text-zinc-800 dark:text-neutral-200">
-                      <span className="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
-                      <span>{assertion.name}</span>
-                    </div>
-                    <span className="font-mono text-[10px] font-bold text-emerald-500 bg-emerald-500/10 px-2 py-0.5 rounded-md border border-emerald-500/20">
-                      PASS
-                    </span>
+                    {selectedTest.status === 'passed' ? (
+                      <CheckCircle2 size={16} className="text-emerald-500 shrink-0 mt-0.5" />
+                    ) : selectedTest.status === 'running' ? (
+                      <Zap size={16} className="text-amber-500 shrink-0 mt-0.5 animate-pulse" />
+                    ) : (
+                      <div className="w-4 h-4 rounded border border-zinc-300 dark:border-neutral-700 shrink-0 mt-0.5" />
+                    )}
+                    <span className="leading-snug">{assertion.name}</span>
                   </div>
                 ))}
               </div>
             </div>
 
-            {/* Code Implementation Preview */}
+            {/* Source Code Box */}
             <div className="space-y-2">
-              <div className="flex items-center justify-between">
-                <h4 className="text-xs font-bold uppercase tracking-wider text-zinc-500 dark:text-neutral-400 flex items-center gap-1.5">
-                  <Code2 className="w-3.5 h-3.5 text-emerald-500" />
-                  <span>{t('arena.sourceCode')}</span>
-                </h4>
-                <span className="text-[10px] font-mono text-zinc-400 dark:text-neutral-500">
-                  {t('arena.tsVersion')}
-                </span>
+              <div className="flex items-center justify-between text-xs font-mono text-zinc-500 dark:text-neutral-400">
+                <span className="font-bold uppercase">{t('arena.sourceCode')}</span>
+                <span>Next.js 16.3 / TypeScript 7</span>
               </div>
-              <div className="bg-neutral-950 rounded-2xl p-4 border border-neutral-800 font-mono text-xs text-neutral-300 overflow-x-auto shadow-inner">
-                <pre className="text-emerald-400/90 leading-relaxed">{selectedTest.codeSample}</pre>
-              </div>
+              <pre className="p-4 rounded-2xl bg-zinc-950 text-emerald-400 font-mono text-xs overflow-x-auto leading-relaxed border border-zinc-800 scrollbar-thin">
+                <code>{selectedTest.codeSample}</code>
+              </pre>
             </div>
           </div>
 
-          {/* Live Runner Output Console Stream */}
-          <div className="bg-neutral-950 rounded-3xl p-6 border border-neutral-800 shadow-sm space-y-3">
-            <div className="flex items-center justify-between pb-2 border-b border-neutral-800">
+          {/* Real-time Runner Output Terminal */}
+          <div className="p-4 rounded-3xl bg-black border border-zinc-800 text-white font-mono text-xs space-y-2 shadow-2xs">
+            <div className="flex items-center justify-between pb-2 border-b border-zinc-800/80">
               <div className="flex items-center gap-2">
-                <Terminal className="w-4 h-4 text-emerald-500" />
-                <span className="text-xs font-mono font-bold uppercase tracking-wider text-neutral-300">
+                <div className="flex gap-1.5">
+                  <div className="w-2.5 h-2.5 rounded-full bg-rose-500/80"></div>
+                  <div className="w-2.5 h-2.5 rounded-full bg-amber-500/80"></div>
+                  <div className="w-2.5 h-2.5 rounded-full bg-emerald-500/80"></div>
+                </div>
+                <span className="text-[11px] text-zinc-400 font-bold ml-2">
                   {t('arena.runnerOutput')}
                 </span>
               </div>
-              <span className="w-2 h-2 rounded-full bg-emerald-500 animate-ping"></span>
+              <span className="text-[10px] text-emerald-400 font-bold">● LIVE STREAM</span>
             </div>
 
-            <div className="space-y-1 font-mono text-xs text-neutral-400 max-h-48 overflow-y-auto pr-2">
-              {consoleLogs.map((log, idx) => (
+            <div className="h-36 overflow-y-auto space-y-1 pr-1 scrollbar-thin text-[11px]">
+              {logs.map((log, lIdx) => (
                 <div
-                  key={idx}
-                  className={`leading-relaxed ${
-                    log.includes('✔') || log.includes('✨')
-                      ? 'text-emerald-400 font-semibold'
-                      : log.includes('▶') || log.includes('🚀')
-                      ? 'text-cyan-400'
-                      : 'text-neutral-400'
+                  key={lIdx}
+                  className={`leading-tight ${
+                    log.includes('PASSED') || log.includes('✓')
+                      ? 'text-emerald-400'
+                      : log.includes('Executing') || log.includes('▶')
+                      ? 'text-sky-400'
+                      : log.includes('Starting') || log.includes('🔥')
+                      ? 'text-amber-400 font-bold'
+                      : 'text-zinc-400'
                   }`}
                 >
                   {log}
