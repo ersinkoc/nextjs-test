@@ -10,7 +10,9 @@ import {
   FileCode2,
   Wrench,
   X,
-  ArrowRight
+  ArrowRight,
+  Database,
+  Share2
 } from 'lucide-react';
 import { ActiveTab } from '../types';
 import { useI18n } from '../i18n';
@@ -65,6 +67,20 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({
       category: 'Compiler & AST',
       icon: Cpu,
       keywords: 'react compiler rust ast signals turbopack bytecode diff usememo',
+    },
+    {
+      id: 'cache-lab' as ActiveTab,
+      title: t('nav.cacheLab'),
+      category: 'Cache Control',
+      icon: Database,
+      keywords: 'cache dynamic io use cache cachelife cachetag revalidatetag ttl purge',
+    },
+    {
+      id: 'og-metadata' as ActiveTab,
+      title: t('nav.ogMetadata'),
+      category: 'Metadata & Social',
+      icon: Share2,
+      keywords: 'og image metadata generatemetadata vercel og imageresponse twitter serp schema',
     },
     {
       id: 'api-simulator' as ActiveTab,

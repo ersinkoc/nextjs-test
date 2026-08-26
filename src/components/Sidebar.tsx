@@ -14,7 +14,9 @@ import {
   Zap,
   Sparkles,
   Server,
-  Layers
+  Layers,
+  Database,
+  Share2
 } from 'lucide-react';
 import { ActiveTab } from '../types';
 import { useI18n } from '../i18n';
@@ -85,11 +87,25 @@ export const Sidebar: React.FC<SidebarProps> = ({
           badgeColor: 'bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 border-indigo-500/20',
         },
         {
+          id: 'cache-lab' as ActiveTab,
+          labelKey: 'nav.cacheLab',
+          icon: Database,
+          badge: 'use cache',
+          badgeColor: 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20',
+        },
+        {
           id: 'compiler-inspector' as ActiveTab,
           labelKey: 'nav.compilerInspector',
           icon: Cpu,
           badge: 'Rust AST',
           badgeColor: 'bg-teal-500/10 text-teal-600 dark:text-teal-400 border-teal-500/20',
+        },
+        {
+          id: 'og-metadata' as ActiveTab,
+          labelKey: 'nav.ogMetadata',
+          icon: Share2,
+          badge: 'OG Image',
+          badgeColor: 'bg-purple-500/10 text-purple-600 dark:text-purple-400 border-purple-500/20',
         },
       ],
     },

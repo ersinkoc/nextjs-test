@@ -343,6 +343,27 @@ export default async function UserProfile({ params }: { params: { id: string } }
   const [tests, setTests] = useState<TestCase[]>(getInitialTestSuite);
   const [selectedTestId, setSelectedTestId] = useState<string>('tc-1');
   const [isRunningAll, setIsRunningAll] = useState(false);
+
+  React.useEffect(() => {
+    const updatedSuite = getInitialTestSuite();
+    setTests((prev) =>
+      updatedSuite.map((newItem) => {
+        const existing = prev.find((p) => p.id === newItem.id);
+        if (existing) {
+          return {
+            ...newItem,
+            status: existing.status,
+            executionTime: existing.executionTime,
+            assertions: newItem.assertions.map((a, i) => ({
+              ...a,
+              passed: existing.assertions[i]?.passed ?? true,
+            })),
+          };
+        }
+        return newItem;
+      })
+    );
+  }, [language]);
   const [logs, setLogs] = useState<string[]>([
     '⚡ Turbopack v16.3.3 Rust Engine initialized (16 workers ready)',
     '✓ Environment: Node.js 24 LTS (Krypton V8 13.4)',

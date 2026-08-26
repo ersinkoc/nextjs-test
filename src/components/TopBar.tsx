@@ -46,6 +46,10 @@ export const TopBar: React.FC<TopBarProps> = ({
         return t('nav.edgeSandbox');
       case 'compiler-inspector':
         return t('nav.compilerInspector');
+      case 'cache-lab':
+        return t('nav.cacheLab');
+      case 'og-metadata':
+        return t('nav.ogMetadata');
       case 'api-simulator':
         return t('nav.apiSimulator');
       case 'scratchpad':

@@ -25,7 +25,7 @@ import { motion } from 'motion/react';
 export const PerformanceLab: React.FC = () => {
   const { t, language } = useI18n();
 
-  const [benchmarks, setBenchmarks] = useState<BenchmarkResult[]>([
+  const getInitialBenchmarks = (): BenchmarkResult[] => [
     {
       id: 'bench-1',
       name: t('bench.compiler'),
@@ -74,7 +74,21 @@ export const PerformanceLab: React.FC = () => {
       memoryDeltaMb: 3.2,
       status: 'ready',
     },
-  ]);
+  ];
+
+  const [benchmarks, setBenchmarks] = useState<BenchmarkResult[]>(getInitialBenchmarks);
+
+  React.useEffect(() => {
+    const fresh = getInitialBenchmarks();
+    setBenchmarks((prev) =>
+      fresh.map((fItem) => {
+        const existing = prev.find((p) => p.id === fItem.id);
+        return existing
+          ? { ...fItem, opsPerSec: existing.opsPerSec, latencyMs: existing.latencyMs, status: existing.status }
+          : fItem;
+      })
+    );
+  }, [language]);
 
   const [isRunningBench, setIsRunningBench] = useState(false);
 

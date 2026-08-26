@@ -11,6 +11,8 @@ import { TestArena } from './components/TestArena';
 import { PerformanceLab } from './components/PerformanceLab';
 import { EdgeStreamSandbox } from './components/EdgeStreamSandbox';
 import { CompilerInspector } from './components/CompilerInspector';
+import { DynamicCacheLab } from './components/DynamicCacheLab';
+import { OgMetadataStudio } from './components/OgMetadataStudio';
 import { ActiveTab, NoteItem } from './types';
 import { motion, AnimatePresence } from 'motion/react';
 import { I18nProvider, useI18n } from './i18n';
@@ -46,7 +48,13 @@ function AppContent() {
   const { t, language } = useI18n();
   const [activeTab, setActiveTab] = useState<ActiveTab>('overview');
   const [isCollapsed, setIsCollapsed] = useState<boolean>(false);
-  const [isDark, setIsDark] = useState<boolean>(true);
+  const [isDark, setIsDark] = useState<boolean>(() => {
+    const saved = localStorage.getItem('nextjs_arena_theme');
+    if (saved !== null) {
+      return saved === 'dark';
+    }
+    return true;
+  });
   const [isCommandOpen, setIsCommandOpen] = useState<boolean>(false);
 
   const [notes, setNotes] = useState<NoteItem[]>(() => {
@@ -64,8 +72,10 @@ function AppContent() {
   useEffect(() => {
     if (isDark) {
       document.documentElement.classList.add('dark');
+      localStorage.setItem('nextjs_arena_theme', 'dark');
     } else {
       document.documentElement.classList.remove('dark');
+      localStorage.setItem('nextjs_arena_theme', 'light');
     }
   }, [isDark]);
 
@@ -199,6 +209,30 @@ function AppContent() {
                 transition={{ duration: 0.15 }}
               >
                 <CompilerInspector />
+              </motion.div>
+            )}
+
+            {activeTab === 'cache-lab' && (
+              <motion.div
+                key="cache-lab"
+                initial={{ opacity: 0, y: 8 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -8 }}
+                transition={{ duration: 0.15 }}
+              >
+                <DynamicCacheLab />
+              </motion.div>
+            )}
+
+            {activeTab === 'og-metadata' && (
+              <motion.div
+                key="og-metadata"
+                initial={{ opacity: 0, y: 8 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -8 }}
+                transition={{ duration: 0.15 }}
+              >
+                <OgMetadataStudio />
               </motion.div>
             )}
 

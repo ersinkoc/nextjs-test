@@ -66,6 +66,8 @@ export type ActiveTab =
   | 'performance-lab' 
   | 'edge-sandbox'
   | 'compiler-inspector'
+  | 'cache-lab'
+  | 'og-metadata'
   | 'api-simulator' 
   | 'scratchpad' 
   | 'tools';
