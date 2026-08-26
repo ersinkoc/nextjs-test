@@ -507,11 +507,10 @@ export const SqlCodeEditor: React.FC<SqlCodeEditorProps> = ({
   // Generate Syntax Highlighted HTML
   const highlightedCodeHtml = useMemo(() => {
     if (!value) {
-      const placeholderText = placeholder || 'SELECT * FROM arena_test_runs LIMIT 25;';
-      return `<span style="color:${COLOR_COMMENT};font-style:italic;">${placeholderText}</span>\n`;
+      return '';
     }
     return highlightSql(value) + '\n';
-  }, [value, placeholder]);
+  }, [value]);
 
   useEffect(() => {
     if (autoFocus && textareaRef.current) {
@@ -530,15 +529,16 @@ export const SqlCodeEditor: React.FC<SqlCodeEditorProps> = ({
     margin: 0,
     border: 'none',
     outline: 'none',
-    whiteSpace: 'pre-wrap',
-    wordBreak: 'break-word',
+    whiteSpace: 'pre',
+    wordBreak: 'normal',
+    overflowWrap: 'normal',
     boxSizing: 'border-box',
   };
 
   return (
     <div
       className={`rounded-2xl border border-zinc-200 dark:border-neutral-800 bg-white dark:bg-neutral-950 overflow-hidden shadow-xs transition-all flex flex-col ${
-        isExpanded ? 'fixed inset-4 z-50 shadow-2xl bg-white dark:bg-neutral-950 flex flex-col' : ''
+        isExpanded ? 'fixed inset-4 z-50 shadow-2xl bg-white dark:bg-neutral-950 flex flex-col' : 'w-full'
       } ${className}`}
     >
       {/* Editor Header Toolbar */}
@@ -625,10 +625,11 @@ export const SqlCodeEditor: React.FC<SqlCodeEditorProps> = ({
 
       {/* Editor Body: Line Numbers Gutter + Code Area */}
       <div
-        className="relative flex flex-1 bg-zinc-950 font-mono text-xs overflow-hidden"
+        className="relative flex w-full bg-zinc-950 font-mono text-xs overflow-hidden"
         style={{
-          minHeight: isExpanded ? 'calc(100vh - 160px)' : minHeight,
-          maxHeight: isExpanded ? 'calc(100vh - 160px)' : maxHeight,
+          height: isExpanded ? 'calc(100vh - 160px)' : (minHeight || '180px'),
+          minHeight: isExpanded ? 'calc(100vh - 160px)' : (minHeight || '180px'),
+          maxHeight: isExpanded ? 'calc(100vh - 160px)' : (maxHeight || '360px'),
         }}
       >
         {/* Line Numbers Gutter */}
@@ -636,11 +637,13 @@ export const SqlCodeEditor: React.FC<SqlCodeEditorProps> = ({
           <div
             ref={gutterRef}
             aria-hidden="true"
-            className="w-10 sm:w-12 py-3 bg-zinc-950/90 text-zinc-600 dark:text-neutral-600 border-r border-zinc-800/80 select-none text-right pr-2.5 overflow-hidden flex-shrink-0 text-xs font-mono"
+            className="w-10 sm:w-12 bg-zinc-950/90 text-zinc-600 dark:text-neutral-600 border-r border-zinc-800/80 select-none text-right pr-2.5 overflow-hidden flex-shrink-0 text-xs font-mono"
             style={{
               fontFamily: 'ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace',
               fontSize: '13px',
               lineHeight: '22px',
+              paddingTop: '12px',
+              paddingBottom: '12px',
             }}
           >
             {Array.from({ length: Math.max(lineCount, 1) }).map((_, idx) => {
@@ -663,9 +666,9 @@ export const SqlCodeEditor: React.FC<SqlCodeEditorProps> = ({
         )}
 
         {/* Text Area & Syntax Highlight Backing Container */}
-        <div className="relative flex-1 h-full overflow-hidden bg-zinc-950">
-          {/* Backing Syntax Highlighted Layer (<pre><code>) - Rendered only if highlight enabled */}
-          {isHighlightEnabled && (
+        <div className="relative flex-1 w-full h-full min-h-full overflow-hidden bg-zinc-950">
+          {/* Backing Syntax Highlighted Layer (<pre><code>) - Rendered only if highlight enabled and value exists */}
+          {isHighlightEnabled && value && (
             <pre
               ref={preRef}
               aria-hidden="true"
@@ -674,7 +677,7 @@ export const SqlCodeEditor: React.FC<SqlCodeEditorProps> = ({
                 color: COLOR_DEFAULT,
                 backgroundColor: 'transparent',
               }}
-              className="absolute inset-0 overflow-hidden pointer-events-none z-0 select-none"
+              className="absolute inset-0 w-full h-full overflow-hidden pointer-events-none z-0 select-none"
               dangerouslySetInnerHTML={{ __html: highlightedCodeHtml }}
             />
           )}
@@ -700,12 +703,12 @@ export const SqlCodeEditor: React.FC<SqlCodeEditorProps> = ({
             autoCorrect="off"
             style={{
               ...unifiedTypographyStyle,
-              color: isHighlightEnabled ? 'transparent' : '#f8fafc',
-              WebkitTextFillColor: isHighlightEnabled ? 'transparent' : '#f8fafc',
-              caretColor: '#67e8f9',
+              color: !value ? '#94a3b8' : (isHighlightEnabled ? 'transparent' : '#f8fafc'),
+              WebkitTextFillColor: !value ? '#94a3b8' : (isHighlightEnabled ? 'transparent' : '#f8fafc'),
+              caretColor: '#38bdf8',
               backgroundColor: 'transparent',
             }}
-            className="absolute inset-0 w-full h-full resize-none focus:outline-none z-10 selection:bg-cyan-500/30 selection:text-transparent"
+            className="absolute inset-0 w-full h-full resize-none focus:outline-none z-10 selection:bg-cyan-500/30 selection:text-transparent overflow-auto"
           />
         </div>
       </div>
