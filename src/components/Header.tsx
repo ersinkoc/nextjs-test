@@ -46,7 +46,10 @@ export const Header: React.FC<HeaderProps> = ({
                   {t('app.badge')}
                 </span>
                 <span className="hidden sm:inline-block px-2 py-0.5 rounded-full text-[10px] font-mono font-medium bg-zinc-100 dark:bg-neutral-800 text-zinc-600 dark:text-neutral-400 border border-zinc-200 dark:border-neutral-700">
-                  Node 22 LTS
+                  Node 24 LTS
+                </span>
+                <span className="hidden lg:inline-block px-2 py-0.5 rounded-full text-[10px] font-mono font-semibold bg-cyan-500/10 text-cyan-500 dark:text-cyan-400 border border-cyan-500/20">
+                  Rust Compiler
                 </span>
               </div>
               <p className="text-zinc-500 dark:text-neutral-500 font-mono text-[11px]">

@@ -20,7 +20,7 @@ export interface ApiLog {
 export interface TestCase {
   id: string;
   name: string;
-  category: 'Server Actions' | 'App Router' | 'Hydration' | 'Middleware' | 'Edge Streaming' | 'Turbopack Cache';
+  category: 'Server Actions' | 'App Router' | 'Hydration' | 'Middleware' | 'Edge Streaming' | 'Turbopack Cache' | 'Instant Navigations' | 'React Compiler';
   description: string;
   status: 'idle' | 'running' | 'passed' | 'failed';
   executionTime?: number;

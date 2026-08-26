@@ -13,7 +13,8 @@ import {
   ShieldCheck, 
   Sliders,
   BarChart2,
-  RefreshCw
+  RefreshCw,
+  Sparkles
 } from 'lucide-react';
 import { BenchmarkResult, SecurityCheckItem } from '../types';
 import { useI18n } from '../i18n';
@@ -24,34 +25,34 @@ export const PerformanceLab: React.FC = () => {
   const [benchmarks, setBenchmarks] = useState<BenchmarkResult[]>([
     {
       id: 'b-1',
-      name: language === 'tr' ? 'JSON Serileştirme (10.000 nesne)' : 'JSON Serialization (10,000 objects)',
-      opsPerSec: 142000,
-      latencyMs: 0.12,
-      memoryDeltaMb: 2.1,
+      name: language === 'tr' ? 'Rust React Compiler AST Dönüşümü (1.000 bileşen)' : 'Rust React Compiler AST Transform (1,000 components)',
+      opsPerSec: 320000,
+      latencyMs: 0.04,
+      memoryDeltaMb: 0.8,
       status: 'success',
     },
     {
       id: 'b-2',
-      name: language === 'tr' ? 'React Sanal DOM Uzlaştırma (500 düğüm)' : 'React Virtual DOM Re-conciliation (500 nodes)',
-      opsPerSec: 68500,
-      latencyMs: 0.45,
-      memoryDeltaMb: 4.8,
+      name: language === 'tr' ? 'Turbopack Persistent Cache Hit Hızı' : 'Turbopack Persistent Cache Hit Speed',
+      opsPerSec: 540000,
+      latencyMs: 0.02,
+      memoryDeltaMb: 0.3,
       status: 'success',
     },
     {
       id: 'b-3',
-      name: language === 'tr' ? 'App Router Middleware Başlık Çözümleme' : 'App Router Middleware Header Resolution',
-      opsPerSec: 92400,
-      latencyMs: 0.28,
-      memoryDeltaMb: 1.2,
+      name: language === 'tr' ? 'Instant Navigations Partial Prefetch Yanıtı' : 'Instant Navigations Partial Prefetch Response',
+      opsPerSec: 185000,
+      latencyMs: 0.09,
+      memoryDeltaMb: 1.1,
       status: 'success',
     },
     {
       id: 'b-4',
       name: language === 'tr' ? 'Edge Kripto İmza Doğrulama (HMAC-SHA256)' : 'Edge Crypto Signature Verification (HMAC-SHA256)',
-      opsPerSec: 41200,
-      latencyMs: 0.85,
-      memoryDeltaMb: 0.9,
+      opsPerSec: 82000,
+      latencyMs: 0.35,
+      memoryDeltaMb: 0.5,
       status: 'success',
     },
   ]);
@@ -59,56 +60,56 @@ export const PerformanceLab: React.FC = () => {
   const [securityItems, setSecurityItems] = useState<SecurityCheckItem[]>([
     {
       id: 'sec-1',
-      title: language === 'tr' ? 'Content Security Policy (CSP) Başlığı' : 'Content Security Policy (CSP) Header',
-      desc: language === 'tr' ? 'default-src \'self\'; script-src \'nonce-xxx\' ile XSS engelleme' : 'default-src \'self\'; script-src \'nonce-xxx\' to prevent XSS',
+      title: language === 'tr' ? 'Next.js 16.3.3 Security Release Patch' : 'Next.js 16.3.3 Security Release Patch',
+      desc: language === 'tr' ? 'Ağustos 2026 kritik güvenlik yamaları ve middleware header sanitization uygulandı.' : 'August 2026 critical security patches and middleware header sanitization applied.',
       status: 'pass',
       score: '100/100',
     },
     {
       id: 'sec-2',
-      title: language === 'tr' ? 'Server Action CSRF Token Koruması' : 'Server Action CSRF Token Guard',
-      desc: language === 'tr' ? 'Next.js 15 otomatik Origin / Host header doğrulaması' : 'Next.js 15 auto Origin / Host header verification',
+      title: language === 'tr' ? 'Content Security Policy (CSP) & Nonce Guard' : 'Content Security Policy (CSP) & Nonce Guard',
+      desc: language === 'tr' ? 'default-src \'self\'; script-src \'nonce-xxx\' ile XSS tamamen engellendi.' : 'default-src \'self\'; script-src \'nonce-xxx\' to prevent XSS injection.',
       status: 'pass',
       score: 'A+',
     },
     {
       id: 'sec-3',
-      title: language === 'tr' ? 'Strict-Transport-Security (HSTS)' : 'Strict-Transport-Security (HSTS)',
-      desc: language === 'tr' ? 'max-age=63072000; includeSubDomains; preload' : 'max-age=63072000; includeSubDomains; preload',
+      title: language === 'tr' ? 'Server Action CSRF & Origin Validation' : 'Server Action CSRF & Origin Validation',
+      desc: language === 'tr' ? 'Next.js 16 otomatik Origin / Host header doğrulaması ve güvenli form sözleşmesi.' : 'Next.js 16 automated Origin / Host header verification & safe form contract.',
       status: 'pass',
       score: 'Enforced',
     },
     {
       id: 'sec-4',
-      title: language === 'tr' ? 'Sensitive Data Leakage Audit (DCE)' : 'Sensitive Data Leakage Audit (DCE)',
-      desc: language === 'tr' ? 'Gizli sunucu anahtarları istemci bundle içine sızmıyor (Dead Code Elimination)' : 'Secret server keys do not leak into client bundle (Dead Code Elimination)',
+      title: language === 'tr' ? 'Dead Code Elimination & Secret Key DCE' : 'Dead Code Elimination & Secret Key DCE',
+      desc: language === 'tr' ? 'Gizli sunucu anahtarları istemci bundle içine asla sızmıyor (Tree Shaking + DCE).' : 'Secret server keys never leak into client bundles (Tree Shaking + DCE).',
       status: 'pass',
       score: 'Protected',
     },
   ]);
 
   const [isBenchmarking, setIsBenchmarking] = useState<boolean>(false);
-  const [concurrency, setConcurrency] = useState<number>(50);
-  const [totalRequests, setTotalRequests] = useState<number>(500);
+  const [concurrency, setConcurrency] = useState<number>(100);
+  const [totalRequests, setTotalRequests] = useState<number>(1000);
   const [stressMetrics, setStressMetrics] = useState({
-    throughput: 1240,
-    latencyP50: 18,
-    latencyP99: 42,
-    successRate: 99.8,
-    completedRequests: 500,
+    throughput: 2850,
+    latencyP50: 8,
+    latencyP99: 19,
+    successRate: 100,
+    completedRequests: 1000,
   });
 
   const runAllBenchmarks = async () => {
     setIsBenchmarking(true);
     for (let i = 0; i < benchmarks.length; i++) {
-      await new Promise((res) => setTimeout(res, 250));
+      await new Promise((res) => setTimeout(res, 220));
       setBenchmarks((prev) =>
         prev.map((b, idx) =>
           idx === i
             ? {
                 ...b,
-                opsPerSec: Math.floor(b.opsPerSec * (0.95 + Math.random() * 0.1)),
-                latencyMs: +(b.latencyMs * (0.92 + Math.random() * 0.15)).toFixed(2),
+                opsPerSec: Math.floor(b.opsPerSec * (0.96 + Math.random() * 0.08)),
+                latencyMs: +(b.latencyMs * (0.94 + Math.random() * 0.12)).toFixed(2),
               }
             : b
         )
@@ -123,12 +124,12 @@ export const PerformanceLab: React.FC = () => {
     const step = Math.ceil(totalRequests / 10);
 
     for (let i = 0; i < 10; i++) {
-      await new Promise((res) => setTimeout(res, 120));
+      await new Promise((res) => setTimeout(res, 90));
       reqs += step;
       setStressMetrics({
-        throughput: Math.floor(1100 + Math.random() * 350),
-        latencyP50: Math.floor(16 + Math.random() * 8),
-        latencyP99: Math.floor(38 + Math.random() * 12),
+        throughput: Math.floor(2600 + Math.random() * 500),
+        latencyP50: Math.floor(6 + Math.random() * 4),
+        latencyP99: Math.floor(16 + Math.random() * 6),
         successRate: 100,
         completedRequests: Math.min(reqs, totalRequests),
       });
@@ -138,11 +139,11 @@ export const PerformanceLab: React.FC = () => {
 
   return (
     <div className="space-y-6">
-      {/* Top Header & Overview */}
-      <div className="bg-white dark:bg-neutral-900 rounded-3xl p-6 sm:p-8 border border-zinc-200 dark:border-neutral-800 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-4">
+      {/* Header Banner */}
+      <div className="bg-white dark:bg-neutral-900 rounded-3xl p-6 sm:p-8 border border-zinc-200 dark:border-neutral-800 shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <span className="text-xs font-bold text-zinc-500 dark:text-neutral-500 uppercase tracking-widest flex items-center gap-1.5 mb-1">
-            <Gauge className="w-3.5 h-3.5 text-emerald-500" />
+            <Activity className="w-3.5 h-3.5 text-emerald-500" />
             {t('perf.badge')}
           </span>
           <h2 className="text-xl sm:text-2xl font-bold text-zinc-900 dark:text-white">
@@ -153,173 +154,178 @@ export const PerformanceLab: React.FC = () => {
         <button
           onClick={runAllBenchmarks}
           disabled={isBenchmarking}
-          className="px-5 py-2.5 bg-emerald-500 hover:bg-emerald-400 text-neutral-950 rounded-full font-bold text-xs flex items-center gap-2 transition-all active:scale-95 disabled:opacity-50 shadow-sm cursor-pointer"
+          className="px-5 py-2.5 bg-emerald-500 hover:bg-emerald-400 disabled:opacity-50 text-neutral-950 rounded-full font-bold text-xs flex items-center gap-2 transition-all shadow-sm active:scale-95 cursor-pointer self-start sm:self-auto"
         >
-          {isBenchmarking ? (
-            <RefreshCw className="w-3.5 h-3.5 animate-spin" />
-          ) : (
-            <Play className="w-3.5 h-3.5 fill-current" />
-          )}
+          <Zap className="w-4 h-4 fill-current" />
           <span>{isBenchmarking ? t('perf.running') : t('perf.runAll')}</span>
         </button>
       </div>
 
-      {/* Benchmarks Bento Grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        {benchmarks.map((bm, index) => (
+      {/* Top 4 Performance Bento Metric Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        {benchmarks.map((bench) => (
           <div
-            key={bm.id}
-            className="bg-white dark:bg-neutral-900 rounded-3xl p-5 border border-zinc-200 dark:border-neutral-800 shadow-sm flex flex-col justify-between"
+            key={bench.id}
+            className="bg-white dark:bg-neutral-900 rounded-3xl p-5 sm:p-6 border border-zinc-200 dark:border-neutral-800 shadow-sm flex flex-col justify-between space-y-4"
           >
-            <div className="flex items-center justify-between mb-3">
-              <span className="text-[10px] font-mono font-bold px-2 py-0.5 rounded-full bg-zinc-100 dark:bg-neutral-800 text-zinc-600 dark:text-neutral-400">
-                BENCH #{index + 1}
+            <div className="flex items-center justify-between">
+              <span className="text-[10px] font-mono font-bold uppercase tracking-wider text-zinc-400 dark:text-neutral-500">
+                Next.js 16.3 Engine
               </span>
-              <span className="w-2 h-2 rounded-full bg-emerald-500"></span>
+              <span className="px-2 py-0.5 rounded-full text-[10px] font-mono font-bold bg-emerald-500/10 text-emerald-500 border border-emerald-500/20">
+                OPTIMIZED
+              </span>
             </div>
 
-            <h4 className="text-xs font-bold text-zinc-800 dark:text-neutral-200 min-h-[32px]">
-              {bm.name}
-            </h4>
-
-            <div className="my-4">
-              <div className="text-2xl sm:text-3xl font-mono font-bold text-zinc-900 dark:text-white">
-                {bm.opsPerSec.toLocaleString()}{' '}
-                <span className="text-xs font-sans text-emerald-500 font-medium">
+            <div>
+              <h3 className="text-sm font-bold text-zinc-800 dark:text-neutral-200 leading-snug">
+                {bench.name}
+              </h3>
+              <div className="text-3xl font-bold font-mono text-zinc-900 dark:text-white mt-2">
+                {bench.opsPerSec.toLocaleString()}
+                <span className="text-xs font-sans text-zinc-500 dark:text-neutral-500 ml-1 font-normal">
                   {t('perf.opsSec')}
                 </span>
               </div>
-              <p className="text-[11px] text-zinc-500 dark:text-neutral-400 mt-1 font-mono">
-                {t('perf.avgLatency')}: {bm.latencyMs}ms &bull; &Delta;RAM: {bm.memoryDeltaMb}MB
-              </p>
             </div>
 
-            <div className="w-full bg-zinc-100 dark:bg-neutral-800 h-1.5 rounded-full overflow-hidden">
-              <div
-                className="bg-emerald-500 h-full rounded-full"
-                style={{ width: `${Math.min(100, (bm.opsPerSec / 150000) * 100)}%` }}
-              ></div>
+            <div className="pt-3 border-t border-zinc-100 dark:border-neutral-800/80 flex items-center justify-between text-xs font-mono text-zinc-500 dark:text-neutral-400">
+              <span>{t('perf.avgLatency')}:</span>
+              <span className="text-emerald-500 font-bold">{bench.latencyMs}ms</span>
             </div>
           </div>
         ))}
       </div>
 
-      {/* Interactive Load & Stress Simulator Bento */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-        {/* Stress Simulator (7 cols) */}
-        <div className="lg:col-span-7 bg-white dark:bg-neutral-900 rounded-3xl p-6 sm:p-7 border border-zinc-200 dark:border-neutral-800 shadow-sm space-y-5">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-zinc-100 dark:border-neutral-800">
-            <div>
-              <span className="text-xs font-bold text-zinc-500 dark:text-neutral-500 uppercase tracking-widest flex items-center gap-1.5">
-                <Flame className="w-3.5 h-3.5 text-amber-500" />
-                {t('perf.stressTester')}
-              </span>
-              <h3 className="text-base font-bold text-zinc-900 dark:text-white mt-0.5">
-                {t('perf.stressTitle')}
-              </h3>
-            </div>
-
-            <button
-              onClick={runStressTest}
-              disabled={isBenchmarking}
-              className="px-4 py-2 bg-amber-500 hover:bg-amber-400 text-neutral-950 font-bold text-xs rounded-full flex items-center gap-1.5 transition-all shadow-sm active:scale-95 disabled:opacity-50 cursor-pointer self-start"
-            >
-              <Zap className="w-3.5 h-3.5 fill-current" />
-              <span>{t('perf.fireLoad')}</span>
-            </button>
-          </div>
-
-          {/* Sliders for concurrency & total requests */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
-            <div className="space-y-1.5 bg-zinc-50 dark:bg-neutral-950 p-3.5 rounded-2xl border border-zinc-200 dark:border-neutral-800">
-              <div className="flex justify-between font-mono">
-                <span className="text-zinc-600 dark:text-neutral-400">{t('perf.concurrency')}:</span>
-                <span className="font-bold text-zinc-900 dark:text-white">{concurrency} {t('perf.workers')}</span>
+      {/* Concurrent Stress Tester & Security Checklist Bento */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch">
+        {/* Left: Next.js 16 Load & Stress Tester (7 cols) */}
+        <div className="lg:col-span-7 bg-white dark:bg-neutral-900 rounded-3xl p-6 sm:p-7 border border-zinc-200 dark:border-neutral-800 shadow-sm flex flex-col justify-between space-y-6">
+          <div>
+            <div className="flex items-center justify-between mb-4">
+              <div>
+                <span className="text-xs font-bold text-zinc-500 dark:text-neutral-500 uppercase tracking-widest flex items-center gap-1.5 mb-1">
+                  <Flame className="w-3.5 h-3.5 text-amber-500" />
+                  {t('perf.stressTester')}
+                </span>
+                <h3 className="text-lg font-bold text-zinc-900 dark:text-white">
+                  {t('perf.stressTitle')}
+                </h3>
               </div>
-              <input
-                type="range"
-                min="10"
-                max="200"
-                step="10"
-                value={concurrency}
-                onChange={(e) => setConcurrency(Number(e.target.value))}
-                className="w-full accent-emerald-500 cursor-pointer"
-              />
+
+              <button
+                onClick={runStressTest}
+                disabled={isBenchmarking}
+                className="px-4 py-2 bg-zinc-900 dark:bg-emerald-500 text-white dark:text-neutral-950 hover:bg-zinc-800 dark:hover:bg-emerald-400 disabled:opacity-50 rounded-full font-bold text-xs flex items-center gap-1.5 transition-all shadow-xs cursor-pointer"
+              >
+                <Play className="w-3.5 h-3.5 fill-current" />
+                <span>{t('perf.fireLoad')}</span>
+              </button>
             </div>
 
-            <div className="space-y-1.5 bg-zinc-50 dark:bg-neutral-950 p-3.5 rounded-2xl border border-zinc-200 dark:border-neutral-800">
-              <div className="flex justify-between font-mono">
-                <span className="text-zinc-600 dark:text-neutral-400">{t('perf.totalReqs')}:</span>
-                <span className="font-bold text-zinc-900 dark:text-white">{totalRequests} {t('perf.requests')}</span>
+            {/* Sliders for concurrency */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 my-4 p-4 bg-zinc-50 dark:bg-neutral-950 rounded-2xl border border-zinc-200 dark:border-neutral-800/80">
+              <div className="space-y-1.5">
+                <div className="flex justify-between text-xs font-semibold text-zinc-700 dark:text-neutral-300">
+                  <span>{t('perf.concurrency')}:</span>
+                  <span className="font-mono text-emerald-500 font-bold">{concurrency} {t('perf.workers')}</span>
+                </div>
+                <input
+                  type="range"
+                  min={10}
+                  max={250}
+                  step={10}
+                  value={concurrency}
+                  onChange={(e) => setConcurrency(Number(e.target.value))}
+                  className="w-full accent-emerald-500 cursor-pointer"
+                />
               </div>
-              <input
-                type="range"
-                min="100"
-                max="2000"
-                step="100"
-                value={totalRequests}
-                onChange={(e) => setTotalRequests(Number(e.target.value))}
-                className="w-full accent-emerald-500 cursor-pointer"
-              />
+
+              <div className="space-y-1.5">
+                <div className="flex justify-between text-xs font-semibold text-zinc-700 dark:text-neutral-300">
+                  <span>{t('perf.totalReqs')}:</span>
+                  <span className="font-mono text-cyan-400 font-bold">{totalRequests} {t('perf.requests')}</span>
+                </div>
+                <input
+                  type="range"
+                  min={100}
+                  max={3000}
+                  step={100}
+                  value={totalRequests}
+                  onChange={(e) => setTotalRequests(Number(e.target.value))}
+                  className="w-full accent-cyan-500 cursor-pointer"
+                />
+              </div>
+            </div>
+
+            {/* Telemetry Output Bento Grid */}
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+              <div className="p-3 bg-zinc-50 dark:bg-neutral-950 rounded-2xl border border-zinc-200 dark:border-neutral-800 text-center">
+                <div className="text-[10px] font-mono uppercase text-zinc-400 dark:text-neutral-500">{t('perf.throughput')}</div>
+                <div className="text-xl font-bold font-mono text-emerald-500 mt-1">{stressMetrics.throughput} <span className="text-[10px]">req/s</span></div>
+              </div>
+              <div className="p-3 bg-zinc-50 dark:bg-neutral-950 rounded-2xl border border-zinc-200 dark:border-neutral-800 text-center">
+                <div className="text-[10px] font-mono uppercase text-zinc-400 dark:text-neutral-500">{t('perf.latencyP50')}</div>
+                <div className="text-xl font-bold font-mono text-cyan-400 mt-1">{stressMetrics.latencyP50} <span className="text-[10px]">ms</span></div>
+              </div>
+              <div className="p-3 bg-zinc-50 dark:bg-neutral-950 rounded-2xl border border-zinc-200 dark:border-neutral-800 text-center">
+                <div className="text-[10px] font-mono uppercase text-zinc-400 dark:text-neutral-500">P99 Tail</div>
+                <div className="text-xl font-bold font-mono text-purple-400 mt-1">{stressMetrics.latencyP99} <span className="text-[10px]">ms</span></div>
+              </div>
+              <div className="p-3 bg-zinc-50 dark:bg-neutral-950 rounded-2xl border border-zinc-200 dark:border-neutral-800 text-center">
+                <div className="text-[10px] font-mono uppercase text-zinc-400 dark:text-neutral-500">{t('perf.successRate')}</div>
+                <div className="text-xl font-bold font-mono text-emerald-400 mt-1">{stressMetrics.successRate}%</div>
+              </div>
             </div>
           </div>
 
-          {/* Metric Telemetry Outputs */}
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-center">
-            <div className="bg-zinc-50 dark:bg-neutral-950 p-3 rounded-2xl border border-zinc-200 dark:border-neutral-800">
-              <span className="text-[10px] text-zinc-500 dark:text-neutral-500 uppercase font-mono font-bold block">{t('perf.throughput')}</span>
-              <span className="text-lg font-mono font-bold text-emerald-500">{stressMetrics.throughput} req/s</span>
-            </div>
-            <div className="bg-zinc-50 dark:bg-neutral-950 p-3 rounded-2xl border border-zinc-200 dark:border-neutral-800">
-              <span className="text-[10px] text-zinc-500 dark:text-neutral-500 uppercase font-mono font-bold block">{t('perf.completed')}</span>
-              <span className="text-lg font-mono font-bold text-zinc-900 dark:text-white">{stressMetrics.completedRequests}</span>
-            </div>
-            <div className="bg-zinc-50 dark:bg-neutral-950 p-3 rounded-2xl border border-zinc-200 dark:border-neutral-800">
-              <span className="text-[10px] text-zinc-500 dark:text-neutral-500 uppercase font-mono font-bold block">{t('perf.latencyP50')}</span>
-              <span className="text-lg font-mono font-bold text-cyan-400">{stressMetrics.latencyP50}ms</span>
-            </div>
-            <div className="bg-zinc-50 dark:bg-neutral-950 p-3 rounded-2xl border border-zinc-200 dark:border-neutral-800">
-              <span className="text-[10px] text-zinc-500 dark:text-neutral-500 uppercase font-mono font-bold block">{t('perf.successRate')}</span>
-              <span className="text-lg font-mono font-bold text-emerald-500">{stressMetrics.successRate}%</span>
-            </div>
-          </div>
+          <p className="text-[11px] font-mono text-zinc-400 dark:text-neutral-500">
+            {t('perf.completed')}: {stressMetrics.completedRequests} / {totalRequests} requests &bull; Turbopack JIT Pipeline Active
+          </p>
         </div>
 
-        {/* Security Audit Checklist (5 cols) */}
-        <div className="lg:col-span-5 bg-white dark:bg-neutral-900 rounded-3xl p-6 sm:p-7 border border-zinc-200 dark:border-neutral-800 shadow-sm space-y-4">
-          <div className="flex items-center justify-between pb-3 border-b border-zinc-100 dark:border-neutral-800">
-            <div>
+        {/* Right: Security Hardening Checklist (5 cols) */}
+        <div className="lg:col-span-5 bg-white dark:bg-neutral-900 rounded-3xl p-6 sm:p-7 border border-zinc-200 dark:border-neutral-800 shadow-sm flex flex-col justify-between space-y-4">
+          <div>
+            <div className="flex items-center justify-between mb-3">
               <span className="text-xs font-bold text-zinc-500 dark:text-neutral-500 uppercase tracking-widest flex items-center gap-1.5">
                 <Lock className="w-3.5 h-3.5 text-emerald-500" />
                 {t('perf.securityAudit')}
               </span>
-              <h3 className="text-sm font-bold text-zinc-900 dark:text-white mt-0.5">
-                {t('perf.securityTitle')}
-              </h3>
+              <span className="px-2 py-0.5 rounded-full text-[10px] font-mono font-bold bg-emerald-500/10 text-emerald-500 border border-emerald-500/20">
+                PASSED (4/4)
+              </span>
             </div>
-            <span className="px-2.5 py-0.5 rounded-full text-[10px] font-mono font-bold bg-emerald-500/10 text-emerald-500 border border-emerald-500/20">
-              Grade A+
-            </span>
+
+            <h3 className="text-lg font-bold text-zinc-900 dark:text-white mb-3">
+              {t('perf.securityTitle')}
+            </h3>
+
+            <div className="space-y-2.5">
+              {securityItems.map((item) => (
+                <div
+                  key={item.id}
+                  className="p-3 rounded-2xl bg-zinc-50 dark:bg-neutral-950 border border-zinc-200 dark:border-neutral-800 flex items-center justify-between gap-3 text-xs"
+                >
+                  <div className="space-y-0.5">
+                    <div className="font-semibold text-zinc-900 dark:text-white flex items-center gap-1.5">
+                      <ShieldCheck className="w-3.5 h-3.5 text-emerald-500 flex-shrink-0" />
+                      <span>{item.title}</span>
+                    </div>
+                    <p className="text-[11px] text-zinc-500 dark:text-neutral-400 line-clamp-1">{item.desc}</p>
+                  </div>
+
+                  <span className="font-mono text-[10px] font-bold text-emerald-500 bg-emerald-500/10 px-2 py-0.5 rounded-md border border-emerald-500/20 flex-shrink-0">
+                    {item.score}
+                  </span>
+                </div>
+              ))}
+            </div>
           </div>
 
-          <div className="space-y-2.5">
-            {securityItems.map((sec) => (
-              <div
-                key={sec.id}
-                className="p-3 bg-zinc-50 dark:bg-neutral-950 rounded-2xl border border-zinc-200 dark:border-neutral-800 flex items-start justify-between gap-3 text-xs"
-              >
-                <div className="flex items-start gap-2.5">
-                  <ShieldCheck className="w-4 h-4 text-emerald-500 mt-0.5 flex-shrink-0" />
-                  <div>
-                    <h5 className="font-bold text-zinc-900 dark:text-white">{sec.title}</h5>
-                    <p className="text-[11px] text-zinc-500 dark:text-neutral-400 mt-0.5">{sec.desc}</p>
-                  </div>
-                </div>
-                <span className="text-[10px] font-mono font-bold px-2 py-0.5 rounded-md bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 flex-shrink-0">
-                  {sec.score}
-                </span>
-              </div>
-            ))}
+          <div className="p-3 bg-emerald-500/10 border border-emerald-500/20 rounded-2xl text-[11px] text-emerald-600 dark:text-emerald-400 font-medium flex items-center gap-2">
+            <CheckCircle2 className="w-4 h-4 flex-shrink-0" />
+            <span>Next.js 16.3.3 zero-vulnerability security criteria validated.</span>
           </div>
         </div>
       </div>

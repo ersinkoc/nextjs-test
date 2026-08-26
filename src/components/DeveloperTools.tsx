@@ -20,13 +20,13 @@ export const DeveloperTools: React.FC = () => {
   const [uuid, setUuid] = useState<string>('e7b9a4c1-58d2-4e89-b76f-9988a101f3e2');
   const [copiedId, setCopiedId] = useState<string | null>(null);
 
-  const [base64Input, setBase64Input] = useState<string>('Hello Next.js 15!');
+  const [base64Input, setBase64Input] = useState<string>('Hello Next.js 16.3 & Node 24 LTS!');
   const [base64Mode, setBase64Mode] = useState<'encode' | 'decode'>('encode');
 
-  const [caseInput, setCaseInput] = useState<string>('nextjs_test_arena_playground');
+  const [caseInput, setCaseInput] = useState<string>('nextjs_instant_navigations_arena');
 
   const [jsonInput, setJsonInput] = useState<string>(
-    '{"framework":"Next.js 15.2","node":"22 LTS","turbopack":true,"features":["Server Actions","PPR","Edge Streaming"]}'
+    '{"framework":"Next.js 16.3.3","node":"24 LTS (Krypton)","turbopack":{"persistentCaching":true},"reactCompiler":true,"features":["Instant Navigations","Partial Prefetching","Edge Streaming"]}'
   );
   const [formattedJson, setFormattedJson] = useState<string>('');
   const [jsonError, setJsonError] = useState<string | null>(null);
@@ -74,6 +74,27 @@ export const DeveloperTools: React.FC = () => {
       setJsonError(err.message);
     }
   };
+
+  const next16ConfigSnippet = `import type { NextConfig } from 'next';
+
+const nextConfig: NextConfig = {
+  reactStrictMode: true,
+  turbopack: {
+    // Persistent build caching for ultra-fast builds
+    persistentCaching: true,
+  },
+  experimental: {
+    // Next.js 16.3 Rust React Compiler & Instant Navigations
+    reactCompiler: true,
+    instantNavigations: true,
+    ppr: true,
+    serverActions: {
+      bodySizeLimit: '6mb',
+    },
+  },
+};
+
+export default nextConfig;`;
 
   return (
     <div className="space-y-6">
@@ -254,7 +275,7 @@ export const DeveloperTools: React.FC = () => {
           </div>
         </div>
 
-        {/* 5. Next.js 15 Config Generator */}
+        {/* 5. Next.js 16.3 Config Generator */}
         <div className="bg-white dark:bg-neutral-900 rounded-3xl p-6 border border-zinc-200 dark:border-neutral-800 shadow-sm flex flex-col justify-between">
           <div>
             <div className="flex items-center justify-between mb-3">
@@ -263,12 +284,7 @@ export const DeveloperTools: React.FC = () => {
                 {t('tools.nextConfigTitle')}
               </span>
               <button
-                onClick={() =>
-                  copyToClipboard(
-                    `/** @type {import('next').NextConfig} */\nconst nextConfig = {\n  experimental: {\n    ppr: true,\n    serverActions: {\n      bodySizeLimit: '4mb'\n    }\n  },\n  reactStrictMode: true,\n};\nexport default nextConfig;`,
-                    'config'
-                  )
-                }
+                onClick={() => copyToClipboard(next16ConfigSnippet, 'config')}
                 className="text-[11px] font-mono text-zinc-500 dark:text-neutral-400 hover:text-emerald-500 flex items-center gap-1 cursor-pointer"
               >
                 {copiedId === 'config' ? (
@@ -281,17 +297,7 @@ export const DeveloperTools: React.FC = () => {
             </div>
 
             <div className="p-3 bg-neutral-950 rounded-2xl border border-neutral-800 text-[11px] font-mono text-emerald-400 overflow-x-auto">
-              <pre>{`/** @type {import('next').NextConfig} */
-const nextConfig = {
-  experimental: {
-    ppr: true,
-    serverActions: {
-      bodySizeLimit: '4mb'
-    }
-  },
-  reactStrictMode: true,
-};
-export default nextConfig;`}</pre>
+              <pre>{next16ConfigSnippet}</pre>
             </div>
           </div>
         </div>

@@ -11,33 +11,33 @@ interface OverviewHeroProps {
 
 export const OverviewHero: React.FC<OverviewHeroProps> = ({ setActiveTab, notesCount }) => {
   const { t, language } = useI18n();
-  const [latency, setLatency] = useState<number>(24);
-  const [buildTime, setBuildTime] = useState<string>('1.2');
+  const [latency, setLatency] = useState<number>(14);
+  const [buildTime, setBuildTime] = useState<string>('0.4');
 
   const recentCommits = [
     {
       id: '1',
-      title: language === 'tr' ? 'feat: kapsamlı test arenası & i18n çift dil desteği' : 'feat: full test arena & i18n dual language support',
+      title: language === 'tr' ? 'feat: Next.js 16.3 Instant Navigations & Rust React Compiler' : 'feat: Next.js 16.3 Instant Navigations & Rust React Compiler',
       time: language === 'tr' ? 'Az önce' : 'Just now',
       color: 'from-emerald-400 to-cyan-400',
     },
     {
       id: '2',
-      title: language === 'tr' ? 'fix: app router & edge hydration uyuşmazlığı düzeltildi' : 'fix: app router & edge hydration mismatch resolved',
-      time: language === 'tr' ? '1 sa önce' : '1h ago',
+      title: language === 'tr' ? 'perf: Turbopack persistent caching ile %90 bellek tasarrufu' : 'perf: Turbopack persistent caching with 90% memory savings',
+      time: language === 'tr' ? '30 dk önce' : '30m ago',
       color: 'bg-neutral-700',
     },
     {
       id: '3',
-      title: language === 'tr' ? 'chore: Node 22 LTS & Next.js 15.2 bağımlılık güncellemesi' : 'chore: Node 22 LTS & Next.js 15.2 dependency update',
-      time: language === 'tr' ? '3 sa önce' : '3h ago',
+      title: language === 'tr' ? 'chore: Node 24 LTS (Krypton) & TypeScript 7 motoru aktif' : 'chore: Node 24 LTS (Krypton) & TypeScript 7 engine enabled',
+      time: language === 'tr' ? '2 sa önce' : '2h ago',
       color: 'bg-neutral-800',
     },
   ];
 
   useEffect(() => {
     const interval = setInterval(() => {
-      setLatency(Math.floor(Math.random() * 15) + 18);
+      setLatency(Math.floor(Math.random() * 8) + 10);
     }, 3000);
     return () => clearInterval(interval);
   }, []);
@@ -114,11 +114,11 @@ export const OverviewHero: React.FC<OverviewHeroProps> = ({ setActiveTab, notesC
 
             {/* Dynamic Bar Chart */}
             <div className="mt-4 flex items-end gap-1.5 h-12">
+              <div className="w-full bg-zinc-200 dark:bg-neutral-800 h-1/3 rounded-md transition-all"></div>
               <div className="w-full bg-zinc-200 dark:bg-neutral-800 h-1/2 rounded-md transition-all"></div>
-              <div className="w-full bg-zinc-200 dark:bg-neutral-800 h-2/3 rounded-md transition-all"></div>
               <div className="w-full bg-emerald-500 h-full rounded-md shadow-xs animate-pulse"></div>
-              <div className="w-full bg-zinc-200 dark:bg-neutral-800 h-3/4 rounded-md transition-all"></div>
-              <div className="w-full bg-zinc-200 dark:bg-neutral-800 h-1/2 rounded-md transition-all"></div>
+              <div className="w-full bg-zinc-200 dark:bg-neutral-800 h-2/3 rounded-md transition-all"></div>
+              <div className="w-full bg-zinc-200 dark:bg-neutral-800 h-1/4 rounded-md transition-all"></div>
             </div>
           </div>
 
@@ -161,7 +161,7 @@ export const OverviewHero: React.FC<OverviewHeroProps> = ({ setActiveTab, notesC
               <GitCommit className="w-3.5 h-3.5 text-zinc-400 dark:text-neutral-500" />
               {t('hero.commitLog')}
             </span>
-            <span className="text-[10px] font-mono text-zinc-400 dark:text-neutral-500">main branch</span>
+            <span className="text-[10px] font-mono text-emerald-500 font-bold">next@16.3.3 / main</span>
           </div>
 
           <div className="space-y-3 my-2">
@@ -192,7 +192,7 @@ export const OverviewHero: React.FC<OverviewHeroProps> = ({ setActiveTab, notesC
           </div>
 
           <p className="text-[10px] font-mono text-zinc-400 dark:text-neutral-500 mt-1">
-            Commit SHA: 9f4b10e &bull; JIT Verified
+            Turbopack Engine: Rust v1.85 &bull; JIT Persistent Cache Active
           </p>
         </div>
 
@@ -204,14 +204,14 @@ export const OverviewHero: React.FC<OverviewHeroProps> = ({ setActiveTab, notesC
 
           <div className="my-2">
             <div className="flex items-baseline gap-2">
-              <div className="text-4xl font-bold text-zinc-900 dark:text-white italic tracking-tight font-mono">
+              <div className="text-4xl font-bold text-emerald-500 italic tracking-tight font-mono">
                 {buildTime}
               </div>
               <div className="text-zinc-500 dark:text-neutral-400 text-xs sm:text-sm">{t('hero.seconds')}</div>
             </div>
 
             <div className="w-full bg-zinc-200 dark:bg-neutral-800 h-2 rounded-full mt-4 overflow-hidden">
-              <div className="w-3/4 bg-emerald-500 h-full rounded-full animate-pulse"></div>
+              <div className="w-full bg-emerald-500 h-full rounded-full"></div>
             </div>
           </div>
 

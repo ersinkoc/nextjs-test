@@ -14,16 +14,16 @@ import { I18nProvider, useI18n } from './i18n';
 const INITIAL_NOTES: NoteItem[] = [
   {
     id: 'note-1',
-    title: 'Next.js 15 App Router & Turbopack özelliklerini incele',
-    content: 'Yeni async Request API ve caching davranışları kontrol edildi.',
+    title: 'Next.js 16.3 Instant Navigations & Turbopack Persistent Cache',
+    content: 'Partial Prefetching ve Rust React Compiler AST optimizasyonu doğrulandı.',
     category: 'deneme',
     completed: true,
     createdAt: 'Bugün, 14:20',
   },
   {
     id: 'note-2',
-    title: 'Server Action form doğrulama yapısı oluştur',
-    content: 'zod veya standard-schema ile action parametreleri doğrulanabilir.',
+    title: 'Node 24 LTS & Server Actions Form Sözleşmesi',
+    content: 'V8 v13.4 motoru ve strict origin CSRF koruması test edildi.',
     category: 'fikir',
     completed: false,
     createdAt: 'Bugün, 15:45',

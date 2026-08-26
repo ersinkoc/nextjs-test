@@ -7,16 +7,16 @@ import { useI18n } from '../i18n';
 export const ApiSimulator: React.FC = () => {
   const { t, language } = useI18n();
 
-  const [selectedEndpoint, setSelectedEndpoint] = useState<'users' | 'server-action' | 'stream' | 'health'>('users');
-  const [latency, setLatency] = useState<number>(300);
+  const [selectedEndpoint, setSelectedEndpoint] = useState<'users' | 'server-action' | 'instant-nav' | 'health'>('users');
+  const [latency, setLatency] = useState<number>(120);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [activeView, setActiveView] = useState<'response' | 'code'>('response');
   const [streamChunks, setStreamChunks] = useState<string[]>([]);
   const [currentResponse, setCurrentResponse] = useState<any>({
     status: 200,
     message: language === 'tr' 
-      ? 'Test etmeye hazır. "İsteği Çalıştır" butonuna tıklayarak simülasyonu başlatın.' 
-      : 'Ready to test. Click "Execute Request" to launch the simulation.',
+      ? 'Next.js 16.3 API hazır. "İsteği Çalıştır" butonuna tıklayarak simülasyonu başlatın.' 
+      : 'Next.js 16.3 API ready. Click "Execute Request" to launch the simulation.',
     data: null,
   });
   const [logs, setLogs] = useState<ApiLog[]>([
@@ -25,9 +25,9 @@ export const ApiSimulator: React.FC = () => {
       endpoint: '/api/users',
       method: 'GET',
       status: 200,
-      durationMs: 24,
+      durationMs: 14,
       timestamp: new Date().toLocaleTimeString(),
-      response: { count: 4, runtime: 'edge' },
+      response: { count: 4, runtime: 'edge', nextVersion: '16.3.3' },
     },
   ]);
 
@@ -35,28 +35,28 @@ export const ApiSimulator: React.FC = () => {
     {
       id: 'users',
       name: 'GET /api/users',
-      desc: language === 'tr' ? 'Next.js App Router Route Handler' : 'Next.js App Router Route Handler',
+      desc: language === 'tr' ? 'Next.js 16 App Router Route Handler' : 'Next.js 16 App Router Route Handler',
       method: 'GET' as const,
       type: 'Route Handler',
     },
     {
       id: 'server-action',
-      name: 'POST createRecord()',
-      desc: language === 'tr' ? 'Next.js Server Action ("use server")' : 'Next.js Server Action ("use server")',
+      name: 'POST mutateRecord()',
+      desc: language === 'tr' ? 'Next.js 16 Server Action ("use server")' : 'Next.js 16 Server Action ("use server")',
       method: 'POST' as const,
       type: 'Server Action',
     },
     {
-      id: 'stream',
-      name: 'GET /api/stream',
-      desc: language === 'tr' ? 'Edge Runtime Streamed Response' : 'Edge Runtime Streamed Response',
+      id: 'instant-nav',
+      name: 'GET /api/instant-stream',
+      desc: language === 'tr' ? 'Instant Navigations & Partial Prefetch Stream' : 'Instant Navigations & Partial Prefetch Stream',
       method: 'GET' as const,
-      type: 'Streaming API',
+      type: 'Instant Stream',
     },
     {
       id: 'health',
       name: 'GET /api/health',
-      desc: language === 'tr' ? 'Sistem Durum & Latency Kontrolü' : 'System Health & Latency Probe',
+      desc: language === 'tr' ? 'Node 24 LTS & Turbopack 16.3 Check' : 'Node 24 LTS & Turbopack 16.3 Check',
       method: 'GET' as const,
       type: 'Micro-Check',
     },
@@ -67,35 +67,37 @@ export const ApiSimulator: React.FC = () => {
     setStreamChunks([]);
     const startTime = performance.now();
 
-    if (selectedEndpoint === 'stream') {
+    if (selectedEndpoint === 'instant-nav') {
       const chunks = language === 'tr' ? [
-        'Bağlantı kuruldu (HTTP/2 200 OK)...',
-        'Model başlatılıyor -> Edge Node [fra1]...',
-        'Veri akışı 1: Tokenler yükleniyor...',
-        'Veri akışı 2: Analiz tamamlandı -> { status: "Success" }',
-        'Stream tamamlandı.',
+        'Instant Prefetch kabuğu iletildi (<4KB, 12ms)...',
+        'Rust React Compiler AST optimize edildi...',
+        'PPR dinamik veri parçacığı 1 aktarılıyor...',
+        'PPR dinamik veri parçacığı 2 tamamlandı -> { status: "Hydrated" }',
+        'Instant Navigation döngüsü tamamlandı.',
       ] : [
-        'Connection established (HTTP/2 200 OK)...',
-        'Model initializing -> Edge Node [fra1]...',
-        'Data chunk 1: Tokens streaming in...',
-        'Data chunk 2: Analysis complete -> { status: "Success" }',
-        'Stream completed successfully.',
+        'Instant Prefetch shell delivered (<4KB, 12ms)...',
+        'Rust React Compiler AST optimized...',
+        'PPR dynamic hole 1 streaming in...',
+        'PPR dynamic hole 2 resolved -> { status: "Hydrated" }',
+        'Instant Navigation cycle completed.',
       ];
 
       for (let i = 0; i < chunks.length; i++) {
-        await new Promise((res) => setTimeout(res, latency / chunks.length + 120));
+        await new Promise((res) => setTimeout(res, latency / chunks.length + 80));
         setStreamChunks((prev) => [...prev, chunks[i]]);
       }
 
       const duration = Math.round(performance.now() - startTime);
       const resPayload = {
-        streaming: true,
+        instantNav: true,
+        partialPrefetch: 'hit',
         chunksReceived: chunks.length,
-        status: 'Stream completed successfully',
+        version: 'Next.js 16.3.3',
+        status: 'Instant navigation streamed smoothly',
         timestamp: new Date().toISOString(),
       };
       setCurrentResponse(resPayload);
-      addLog('/api/stream', 'GET', 200, duration, resPayload);
+      addLog('/api/instant-stream', 'GET', 200, duration, resPayload);
       setIsLoading(false);
       return;
     }
@@ -114,29 +116,30 @@ export const ApiSimulator: React.FC = () => {
           success: true,
           total: 4,
           data: [
-            { id: 'usr_101', name: 'Ersin Koç', role: 'Fullstack Dev', status: 'Active' },
+            { id: 'usr_101', name: 'Ersin Koç', role: 'Fullstack Architect', status: 'Active' },
             { id: 'usr_102', name: 'Elif Yılmaz', role: 'UI/UX Designer', status: 'Online' },
-            { id: 'usr_103', name: 'Burak Demir', role: 'DevOps Engineer', status: 'Idle' },
+            { id: 'usr_103', name: 'Burak Demir', role: 'Performance Engineer', status: 'Idle' },
             { id: 'usr_104', name: 'Deniz Kaya', role: 'Product Manager', status: 'Active' },
           ],
           cache: 'HIT (s-maxage=60, stale-while-revalidate)',
+          framework: 'Next.js 16.3.3',
           generatedAt: new Date().toISOString(),
         };
         break;
 
       case 'server-action':
         method = 'POST';
-        path = 'action:createRecord()';
+        path = 'action:mutateRecord()';
         resPayload = {
           actionExecuted: true,
           revalidatedPaths: ['/', '/dashboard'],
           createdRecord: {
             id: 'rec_' + Math.random().toString(36).substring(2, 8),
-            title: language === 'tr' ? 'Yeni Deneme Kaydı' : 'New Experimental Record',
+            title: language === 'tr' ? 'Next 16.3 Test Kaydı' : 'Next 16.3 Test Record',
             serverExecutedAt: new Date().toISOString(),
-            status: 'Persisted to DB',
+            status: 'Persisted with Rust Action Contract',
           },
-          cookies: { session_token: 'valid_v15_sig' },
+          cookies: { session_token: 'valid_v16_sig' },
         };
         break;
 
@@ -145,10 +148,11 @@ export const ApiSimulator: React.FC = () => {
         path = '/api/health';
         resPayload = {
           status: 'healthy',
-          uptime: '99.99%',
-          runtime: 'Node.js 22 LTS (Active) & Edge compatible',
-          memoryUsage: { rss: '38MB', heapUsed: '16MB' },
-          framework: 'Next.js 15.2.0',
+          uptime: '100%',
+          runtime: 'Node.js 24 LTS (Krypton) & Edge compatible',
+          memoryUsage: { rss: '28MB', heapUsed: '12MB' },
+          framework: 'Next.js 16.3.3',
+          turbopack: { persistentCaching: true, compilerMemoryEviction: true },
           env: 'production',
         };
         break;
@@ -180,7 +184,7 @@ export const ApiSimulator: React.FC = () => {
   };
 
   const codeSnippets: Record<string, string> = {
-    users: `// app/api/users/route.ts
+    users: `// app/api/users/route.ts (Next.js 16.3)
 import { NextResponse } from 'next/server';
 
 export async function GET() {
@@ -196,32 +200,32 @@ export async function GET() {
     }
   });
 }`,
-    'server-action': `// app/actions.ts
+    'server-action': `// app/actions.ts (Next.js 16.3)
 'use server'
 
 import { revalidatePath } from 'next/cache';
 
-export async function createRecord(formData: FormData) {
+export async function mutateRecord(formData: FormData) {
   const title = formData.get('title') as string;
   
   const newRecord = await db.records.create({
     data: { title, createdAt: new Date() }
   });
   
-  // Revalidate the page cache instantly
+  // Revalidate instant router cache
   revalidatePath('/');
   return { success: true, record: newRecord };
 }`,
-    stream: `// app/api/stream/route.ts
+    'instant-nav': `// app/api/instant-stream/route.ts (Next.js 16.3)
 export const runtime = 'edge';
 
 export async function GET() {
   const encoder = new TextEncoder();
   const customStream = new ReadableStream({
     async start(controller) {
-      controller.enqueue(encoder.encode('Stream data start...\\n'));
-      await new Promise(r => setTimeout(r, 400));
-      controller.enqueue(encoder.encode('Processing with AI model...\\n'));
+      controller.enqueue(encoder.encode('Instant Prefetch shell delivered\\n'));
+      await new Promise(r => setTimeout(r, 100));
+      controller.enqueue(encoder.encode('PPR dynamic data stream completed\\n'));
       controller.close();
     }
   });
@@ -230,12 +234,13 @@ export async function GET() {
     headers: { 'Content-Type': 'text/event-stream' }
   });
 }`,
-    health: `// app/api/health/route.ts
+    health: `// app/api/health/route.ts (Next.js 16.3)
 export async function GET() {
   return Response.json({
     status: 'healthy',
-    runtime: 'Node.js 22 LTS',
-    nextVersion: '15.2.0',
+    runtime: 'Node.js 24 LTS (Krypton)',
+    nextVersion: '16.3.3',
+    turbopackCache: 'active',
     timestamp: Date.now()
   });
 }`,
@@ -264,9 +269,9 @@ export async function GET() {
               onChange={(e) => setLatency(Number(e.target.value))}
               className="bg-transparent font-mono text-zinc-900 dark:text-white text-xs font-bold focus:outline-none cursor-pointer"
             >
-              <option value={50} className="bg-white dark:bg-neutral-900">{t('api.fast')}</option>
-              <option value={300} className="bg-white dark:bg-neutral-900">{t('api.standard')}</option>
-              <option value={800} className="bg-white dark:bg-neutral-900">{t('api.slow')}</option>
+              <option value={15} className="bg-white dark:bg-neutral-900">{t('api.fast')}</option>
+              <option value={120} className="bg-white dark:bg-neutral-900">{t('api.standard')}</option>
+              <option value={450} className="bg-white dark:bg-neutral-900">{t('api.slow')}</option>
             </select>
           </div>
 
@@ -298,130 +303,137 @@ export async function GET() {
               }}
               className={`p-4 text-left rounded-2xl border transition-all cursor-pointer ${
                 isSelected
-                  ? 'border-emerald-500 bg-emerald-500/5 dark:bg-emerald-500/10 shadow-xs'
-                  : 'border-zinc-200 dark:border-neutral-800 bg-zinc-50 dark:bg-neutral-950 hover:border-zinc-300 dark:hover:border-neutral-700'
+                  ? 'bg-zinc-50 dark:bg-neutral-950 border-emerald-500 ring-1 ring-emerald-500/20 shadow-xs'
+                  : 'bg-zinc-50/50 dark:bg-neutral-950/40 border-zinc-200 dark:border-neutral-800/80 hover:border-zinc-300 dark:hover:border-neutral-700'
               }`}
             >
-              <div className="flex items-center justify-between mb-2">
+              <div className="flex items-center justify-between mb-1.5">
                 <span
-                  className={`text-[10px] font-mono px-2 py-0.5 rounded-full font-bold ${
+                  className={`text-[10px] font-mono font-bold px-2 py-0.5 rounded-md ${
                     ep.method === 'GET'
-                      ? 'bg-emerald-500/20 text-emerald-600 dark:text-emerald-400'
-                      : 'bg-amber-500/20 text-amber-600 dark:text-amber-400'
+                      ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20'
+                      : 'bg-cyan-500/10 text-cyan-600 dark:text-cyan-400 border border-cyan-500/20'
                   }`}
                 >
                   {ep.method}
                 </span>
-                <span className="text-[10px] text-zinc-400 dark:text-neutral-500 font-mono">{ep.type}</span>
+                <span className="text-[10px] font-mono text-zinc-400 dark:text-neutral-500">
+                  {ep.type}
+                </span>
               </div>
-              <p className="text-xs font-bold text-zinc-900 dark:text-white font-mono">
+              <h4 className="text-xs font-bold text-zinc-900 dark:text-white font-mono truncate">
                 {ep.name}
+              </h4>
+              <p className="text-[11px] text-zinc-500 dark:text-neutral-400 mt-1 line-clamp-1">
+                {ep.desc}
               </p>
-              <p className="text-[11px] text-zinc-500 dark:text-neutral-400 mt-1">{ep.desc}</p>
             </button>
           );
         })}
       </div>
 
-      {/* Code vs Response Bento Viewer */}
-      <div className="border border-zinc-200 dark:border-neutral-800 rounded-2xl overflow-hidden bg-neutral-950 text-neutral-100 shadow-inner">
-        <div className="flex items-center justify-between px-4 py-2.5 bg-neutral-900 border-b border-neutral-800 text-xs">
-          <div className="flex items-center gap-2">
-            <button
-              onClick={() => setActiveView('response')}
-              className={`px-3 py-1 rounded-full transition-all flex items-center gap-1.5 font-medium cursor-pointer ${
-                activeView === 'response'
-                  ? 'bg-neutral-800 text-white font-bold'
-                  : 'text-neutral-400 hover:text-white'
-              }`}
-            >
-              <Activity className="w-3.5 h-3.5 text-emerald-400" />
-              <span>{t('api.responseTab')}</span>
-            </button>
-            <button
-              onClick={() => setActiveView('code')}
-              className={`px-3 py-1 rounded-full transition-all flex items-center gap-1.5 font-medium cursor-pointer ${
-                activeView === 'code'
-                  ? 'bg-neutral-800 text-white font-bold'
-                  : 'text-neutral-400 hover:text-white'
-              }`}
-            >
-              <Code2 className="w-3.5 h-3.5 text-cyan-400" />
-              <span>{t('api.codeTab')}</span>
-            </button>
-          </div>
-
-          <div className="flex items-center gap-2 font-mono text-[11px] text-neutral-400">
-            <span className="inline-block w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
-            <span>HTTP/2 200 OK</span>
-          </div>
-        </div>
-
-        {/* Content Viewer */}
-        <div className="p-4 sm:p-5 font-mono text-xs overflow-x-auto min-h-[190px] max-h-[290px]">
-          {activeView === 'response' ? (
-            selectedEndpoint === 'stream' && streamChunks.length > 0 ? (
-              <div className="space-y-1.5 text-emerald-400">
-                {streamChunks.map((chunk, idx) => (
-                  <div key={idx} className="flex gap-2">
-                    <span className="text-neutral-600 select-none">[{idx + 1}]</span>
-                    <span>{chunk}</span>
-                  </div>
-                ))}
-              </div>
-            ) : (
-              <pre className="text-emerald-400 whitespace-pre-wrap leading-relaxed">
-                {JSON.stringify(currentResponse, null, 2)}
-              </pre>
-            )
-          ) : (
-            <pre className="text-emerald-300 whitespace-pre-wrap leading-relaxed">
-              {codeSnippets[selectedEndpoint] || '// Kod yüklenemedi'}
-            </pre>
-          )}
-        </div>
-      </div>
-
-      {/* Execution Logs */}
-      <div>
-        <div className="flex items-center justify-between mb-2">
-          <span className="text-xs font-bold text-zinc-500 dark:text-neutral-500 uppercase tracking-widest flex items-center gap-1.5">
-            <Terminal className="w-3.5 h-3.5 text-emerald-500" />
-            {t('api.requestLogs')} ({logs.length})
-          </span>
-          <span className="text-[10px] font-mono text-zinc-400 dark:text-neutral-500">Live Telemetry</span>
-        </div>
-
-        <div className="space-y-2">
-          {logs.map((log) => (
-            <div
-              key={log.id}
-              className="flex items-center justify-between px-3.5 py-2.5 bg-zinc-50 dark:bg-neutral-950 rounded-xl border border-zinc-200 dark:border-neutral-800 text-xs font-mono"
-            >
-              <div className="flex items-center gap-2.5">
-                <span
-                  className={`text-[10px] px-2 py-0.5 rounded-full font-bold ${
-                    log.method === 'GET'
-                      ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20'
-                      : 'bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20'
-                  }`}
-                >
-                  {log.method}
-                </span>
-                <span className="font-bold text-zinc-900 dark:text-white">
-                  {log.endpoint}
-                </span>
-              </div>
-
-              <div className="flex items-center gap-3 text-[11px] text-zinc-500 dark:text-neutral-400">
-                <span className="text-emerald-500 font-bold">
-                  {log.status} OK
-                </span>
-                <span>{log.durationMs}ms</span>
-                <span className="text-zinc-400 dark:text-neutral-500">{log.timestamp}</span>
-              </div>
+      {/* Response and Code Preview Tabs */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+        {/* Left Side: Code and Live Response (8 cols) */}
+        <div className="lg:col-span-8 space-y-3">
+          <div className="flex items-center justify-between">
+            <div className="flex bg-zinc-100 dark:bg-neutral-950 p-1 rounded-full border border-zinc-200 dark:border-neutral-800 text-xs">
+              <button
+                onClick={() => setActiveView('response')}
+                className={`px-3 py-1 rounded-full font-semibold transition-all cursor-pointer ${
+                  activeView === 'response'
+                    ? 'bg-white dark:bg-neutral-800 text-zinc-900 dark:text-white shadow-xs'
+                    : 'text-zinc-500 dark:text-neutral-400'
+                }`}
+              >
+                {t('api.responseTab')}
+              </button>
+              <button
+                onClick={() => setActiveView('code')}
+                className={`px-3 py-1 rounded-full font-semibold transition-all cursor-pointer ${
+                  activeView === 'code'
+                    ? 'bg-white dark:bg-neutral-800 text-zinc-900 dark:text-white shadow-xs'
+                    : 'text-zinc-500 dark:text-neutral-400'
+                }`}
+              >
+                {t('api.codeTab')}
+              </button>
             </div>
-          ))}
+
+            <div className="text-[11px] font-mono text-zinc-400 dark:text-neutral-500 flex items-center gap-2">
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+              <span>Next.js 16.3 Handler</span>
+            </div>
+          </div>
+
+          <div className="bg-neutral-950 rounded-2xl p-4 sm:p-5 border border-neutral-800 font-mono text-xs text-neutral-300 min-h-[220px] max-h-[340px] overflow-auto shadow-inner">
+            {activeView === 'response' ? (
+              selectedEndpoint === 'instant-nav' && streamChunks.length > 0 ? (
+                <div className="space-y-1.5 text-cyan-400">
+                  {streamChunks.map((chunk, i) => (
+                    <div key={i} className="flex items-center gap-2">
+                      <span className="text-neutral-600">[{i + 1}]</span>
+                      <span>{chunk}</span>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <pre className="text-emerald-400">
+                  {JSON.stringify(currentResponse, null, 2)}
+                </pre>
+              )
+            ) : (
+              <pre className="text-emerald-400/90 leading-relaxed">
+                {codeSnippets[selectedEndpoint]}
+              </pre>
+            )}
+          </div>
+        </div>
+
+        {/* Right Side: Request Telemetry Log Stream (4 cols) */}
+        <div className="lg:col-span-4 bg-zinc-50 dark:bg-neutral-950 rounded-2xl p-4 sm:p-5 border border-zinc-200 dark:border-neutral-800 space-y-3">
+          <div className="flex items-center justify-between pb-2 border-b border-zinc-200 dark:border-neutral-800">
+            <span className="text-xs font-bold uppercase tracking-wider text-zinc-600 dark:text-neutral-400 flex items-center gap-1.5">
+              <Activity className="w-3.5 h-3.5 text-emerald-500" />
+              {t('api.requestLogs')}
+            </span>
+            <span className="text-[10px] font-mono text-zinc-400 dark:text-neutral-500">
+              {logs.length} logged
+            </span>
+          </div>
+
+          <div className="space-y-2 max-h-[240px] overflow-y-auto pr-1">
+            {logs.map((log) => (
+              <div
+                key={log.id}
+                className="p-2.5 rounded-xl bg-white dark:bg-neutral-900 border border-zinc-200 dark:border-neutral-800/80 text-xs font-mono flex items-center justify-between gap-2 shadow-2xs"
+              >
+                <div className="space-y-0.5 truncate">
+                  <div className="flex items-center gap-1.5">
+                    <span
+                      className={`text-[9px] font-bold px-1.5 py-0.2 rounded ${
+                        log.method === 'GET'
+                          ? 'bg-emerald-500/10 text-emerald-500'
+                          : 'bg-cyan-500/10 text-cyan-500'
+                      }`}
+                    >
+                      {log.method}
+                    </span>
+                    <span className="font-bold text-zinc-800 dark:text-neutral-200 truncate">
+                      {log.endpoint}
+                    </span>
+                  </div>
+                  <div className="text-[10px] text-zinc-400 dark:text-neutral-500">
+                    {log.timestamp} &bull; {log.durationMs}ms
+                  </div>
+                </div>
+
+                <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-emerald-500/10 text-emerald-500 flex-shrink-0">
+                  {log.status}
+                </span>
+              </div>
+            ))}
+          </div>
         </div>
       </div>
     </div>
