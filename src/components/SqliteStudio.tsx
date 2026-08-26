@@ -25,7 +25,14 @@ import {
   Container,
   Network,
   RefreshCw,
-  FolderOpen
+  FolderOpen,
+  History,
+  Trash2,
+  Filter,
+  CheckCircle2,
+  XCircle,
+  ArrowUpRight,
+  X
 } from 'lucide-react';
 import { useI18n } from '../i18n';
 import { motion, AnimatePresence } from 'motion/react';
@@ -34,6 +41,17 @@ interface TableDetail {
   name: string;
   rowCount: number;
   columns: string[];
+}
+
+interface QueryHistoryItem {
+  id: string;
+  sql: string;
+  timestamp: string;
+  executionTimeMs: number;
+  success: boolean;
+  rowCount?: number;
+  changes?: number;
+  error?: string;
 }
 
 interface DbStatus {
@@ -129,6 +147,25 @@ export const SqliteStudio: React.FC = () => {
   const [queryResult, setQueryResult] = useState<QueryResponse | null>(null);
   const [copiedQuery, setCopiedQuery] = useState<boolean>(false);
 
+  // Query History state (Session tracking + SessionStorage persistence)
+  const [queryHistory, setQueryHistory] = useState<QueryHistoryItem[]>(() => {
+    try {
+      const saved = sessionStorage.getItem('arena_sqlite_query_history');
+      if (saved) return JSON.parse(saved);
+    } catch (e) {}
+    return [];
+  });
+  const [historySearch, setHistorySearch] = useState<string>('');
+  const [historyFilter, setHistoryFilter] = useState<'all' | 'success' | 'error'>('all');
+  const [copiedHistoryId, setCopiedHistoryId] = useState<string | null>(null);
+
+  // Save history to sessionStorage on update
+  useEffect(() => {
+    try {
+      sessionStorage.setItem('arena_sqlite_query_history', JSON.stringify(queryHistory));
+    } catch (e) {}
+  }, [queryHistory]);
+
   // Table browser state
   const [selectedTableName, setSelectedTableName] = useState<string>('arena_test_runs');
   const [tableData, setTableData] = useState<any[]>([]);
@@ -204,11 +241,36 @@ export const SqliteStudio: React.FC = () => {
       });
       const data: QueryResponse = await res.json();
       setQueryResult(data);
+
+      // Record in Session Query History
+      const historyEntry: QueryHistoryItem = {
+        id: `qh-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`,
+        sql: q,
+        timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' }),
+        executionTimeMs: data.executionTimeMs || 0,
+        success: data.success,
+        rowCount: data.rowCount,
+        changes: data.changes,
+        error: data.error,
+      };
+      setQueryHistory((prev) => [historyEntry, ...prev]);
+
       // Auto-refresh status if DDL/DML was run
       if (!/^(SELECT|PRAGMA|EXPLAIN)/i.test(q.trim())) {
         fetchDbStatus();
       }
     } catch (err: any) {
+      const errEntry: QueryHistoryItem = {
+        id: `qh-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`,
+        sql: q,
+        timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' }),
+        executionTimeMs: 0,
+        success: false,
+        rowCount: 0,
+        error: err.message,
+      };
+      setQueryHistory((prev) => [errEntry, ...prev]);
+
       setQueryResult({
         success: false,
         sql: q,
@@ -222,6 +284,48 @@ export const SqliteStudio: React.FC = () => {
       setIsExecuting(false);
     }
   };
+
+  // Re-run query directly from history
+  const handleReRunFromHistory = (sql: string) => {
+    setSqlInput(sql);
+    handleExecuteSql(sql);
+  };
+
+  // Load into editor without immediate execution
+  const handleLoadIntoEditor = (sql: string) => {
+    setSqlInput(sql);
+    setActionNotice({ type: 'success', message: 'SQL query loaded into editor.' });
+    setTimeout(() => setActionNotice(null), 2500);
+  };
+
+  // Clear query history
+  const handleClearHistory = () => {
+    setQueryHistory([]);
+    try {
+      sessionStorage.removeItem('arena_sqlite_query_history');
+    } catch (e) {}
+    setActionNotice({ type: 'success', message: 'Session query history cleared.' });
+    setTimeout(() => setActionNotice(null), 2500);
+  };
+
+  // Copy individual history item SQL
+  const handleCopyHistoryItem = (id: string, sql: string) => {
+    navigator.clipboard.writeText(sql);
+    setCopiedHistoryId(id);
+    setTimeout(() => setCopiedHistoryId(null), 1500);
+  };
+
+  // Filtered Query History
+  const filteredHistory = useMemo(() => {
+    return queryHistory.filter((item) => {
+      const matchesSearch = !historySearch.trim() || item.sql.toLowerCase().includes(historySearch.toLowerCase());
+      const matchesFilter =
+        historyFilter === 'all' ||
+        (historyFilter === 'success' && item.success) ||
+        (historyFilter === 'error' && !item.success);
+      return matchesSearch && matchesFilter;
+    });
+  }, [queryHistory, historySearch, historyFilter]);
 
   // Fetch Table Data for browser
   const fetchTableData = async (tableName: string) => {
@@ -582,177 +686,392 @@ export const SqliteStudio: React.FC = () => {
         </button>
       </div>
 
-      {/* TAB 1: SQL Query Studio */}
+      {/* TAB 1: SQL Query Studio with Query History Sidebar */}
       {activeTab === 'query' && (
-        <div className="space-y-5">
-          {/* Query Editor Bento */}
-          <div className="p-6 rounded-3xl bg-white dark:bg-neutral-900 border border-zinc-200 dark:border-neutral-800 shadow-xs space-y-4">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-              <div className="flex items-center gap-2">
-                <Terminal size={16} className="text-emerald-500" />
-                <span className="font-mono text-xs font-bold text-zinc-800 dark:text-neutral-200">
-                  SQL Query Input (SQLite 3.45+ Engine)
+        <div className="grid grid-cols-1 xl:grid-cols-12 gap-6 items-start">
+          {/* Left Column: Query Editor & Results (8 cols) */}
+          <div className="xl:col-span-8 space-y-5">
+            {/* Query Editor Bento */}
+            <div className="p-6 rounded-3xl bg-white dark:bg-neutral-900 border border-zinc-200 dark:border-neutral-800 shadow-xs space-y-4">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                <div className="flex items-center gap-2">
+                  <Terminal size={16} className="text-emerald-500" />
+                  <span className="font-mono text-xs font-bold text-zinc-800 dark:text-neutral-200">
+                    SQL Query Input (SQLite 3.45+ Engine)
+                  </span>
+                </div>
+
+                {/* Presets dropdown */}
+                <div className="flex items-center gap-2">
+                  <span className="text-xs font-mono text-zinc-500">{t('sqlite.presets')}:</span>
+                  <select
+                    onChange={(e) => {
+                      const preset = SQL_PRESETS.find((p) => p.name === e.target.value);
+                      if (preset) {
+                        setSqlInput(preset.sql);
+                        handleExecuteSql(preset.sql);
+                      }
+                    }}
+                    className="px-2.5 py-1 rounded-xl bg-zinc-100 dark:bg-neutral-800 border border-zinc-200 dark:border-neutral-700 text-xs font-mono text-zinc-800 dark:text-neutral-200 focus:outline-none cursor-pointer"
+                  >
+                    {SQL_PRESETS.map((p) => (
+                      <option key={p.name} value={p.name}>
+                        {p.name}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+
+              {/* SQL Textarea */}
+              <div className="relative rounded-2xl bg-zinc-950 border border-zinc-800 p-3 shadow-inner">
+                <textarea
+                  value={sqlInput}
+                  onChange={(e) => setSqlInput(e.target.value)}
+                  onKeyDown={(e) => {
+                    if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
+                      e.preventDefault();
+                      handleExecuteSql();
+                    }
+                  }}
+                  rows={4}
+                  placeholder={t('sqlite.queryPlaceholder')}
+                  className="w-full bg-transparent text-emerald-400 font-mono text-xs focus:outline-none resize-none leading-relaxed"
+                />
+                <span className="absolute right-3 bottom-2 text-[10px] font-mono text-zinc-600">
+                  Press Ctrl + Enter to execute
                 </span>
               </div>
 
-              {/* Presets dropdown */}
-              <div className="flex items-center gap-2">
-                <span className="text-xs font-mono text-zinc-500">{t('sqlite.presets')}:</span>
-                <select
-                  onChange={(e) => {
-                    const preset = SQL_PRESETS.find((p) => p.name === e.target.value);
-                    if (preset) {
-                      setSqlInput(preset.sql);
-                      handleExecuteSql(preset.sql);
-                    }
-                  }}
-                  className="px-2.5 py-1 rounded-xl bg-zinc-100 dark:bg-neutral-800 border border-zinc-200 dark:border-neutral-700 text-xs font-mono text-zinc-800 dark:text-neutral-200 focus:outline-none"
-                >
-                  {SQL_PRESETS.map((p) => (
-                    <option key={p.name} value={p.name}>
-                      {p.name}
-                    </option>
-                  ))}
-                </select>
+              {/* Controls */}
+              <div className="flex items-center justify-between gap-3 flex-wrap">
+                <div className="flex items-center gap-2">
+                  <button
+                    id="sqlite-run-query-btn"
+                    onClick={() => handleExecuteSql()}
+                    disabled={isExecuting}
+                    className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-emerald-500 hover:bg-emerald-600 text-black font-mono font-bold text-xs transition-all shadow-xs cursor-pointer"
+                  >
+                    <Play size={13} className={isExecuting ? 'animate-spin' : ''} />
+                    <span>{isExecuting ? 'Executing...' : t('sqlite.runQuery')}</span>
+                  </button>
+
+                  <button
+                    onClick={() => setSqlInput('')}
+                    className="px-3 py-2 rounded-xl bg-zinc-100 dark:bg-neutral-800 hover:bg-zinc-200 dark:hover:bg-neutral-700 text-zinc-600 dark:text-neutral-300 font-mono text-xs font-semibold transition-all cursor-pointer"
+                  >
+                    {t('sqlite.clearQuery')}
+                  </button>
+                </div>
+
+                {queryResult && (
+                  <div className="flex items-center gap-3 text-xs font-mono flex-wrap">
+                    <span className="flex items-center gap-1 text-zinc-500">
+                      <Clock size={12} className="text-sky-500" />
+                      <span>{t('sqlite.execTime')}:</span>
+                      <strong className="text-zinc-900 dark:text-white font-bold">{queryResult.executionTimeMs}ms</strong>
+                    </span>
+
+                    {queryResult.rowCount > 0 && (
+                      <span className="flex items-center gap-1 text-zinc-500">
+                        <span>{t('sqlite.rowsReturned')}:</span>
+                        <strong className="text-emerald-500 font-bold">{queryResult.rowCount}</strong>
+                      </span>
+                    )}
+
+                    {queryResult.changes !== undefined && queryResult.changes > 0 && (
+                      <span className="flex items-center gap-1 text-zinc-500">
+                        <span>{t('sqlite.affectedRows')}:</span>
+                        <strong className="text-purple-400 font-bold">{queryResult.changes}</strong>
+                      </span>
+                    )}
+                  </div>
+                )}
               </div>
             </div>
 
-            {/* SQL Textarea */}
-            <div className="relative rounded-2xl bg-zinc-950 border border-zinc-800 p-3 shadow-inner">
-              <textarea
-                value={sqlInput}
-                onChange={(e) => setSqlInput(e.target.value)}
-                onKeyDown={(e) => {
-                  if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
-                    e.preventDefault();
-                    handleExecuteSql();
-                  }
-                }}
-                rows={4}
-                placeholder={t('sqlite.queryPlaceholder')}
-                className="w-full bg-transparent text-emerald-400 font-mono text-xs focus:outline-none resize-none leading-relaxed"
-              />
-              <span className="absolute right-3 bottom-2 text-[10px] font-mono text-zinc-600">
-                Press Ctrl + Enter to execute
-              </span>
-            </div>
+            {/* Results Viewer Bento */}
+            <div className="p-6 rounded-3xl bg-white dark:bg-neutral-900 border border-zinc-200 dark:border-neutral-800 shadow-xs space-y-4">
+              <div className="flex items-center justify-between">
+                <span className="font-mono text-xs font-bold text-zinc-800 dark:text-neutral-200 flex items-center gap-2">
+                  <TableIcon size={15} className="text-sky-500" />
+                  Query Execution Result
+                </span>
 
-            {/* Controls */}
-            <div className="flex items-center justify-between gap-3 flex-wrap">
-              <div className="flex items-center gap-2">
-                <button
-                  id="sqlite-run-query-btn"
-                  onClick={() => handleExecuteSql()}
-                  disabled={isExecuting}
-                  className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-emerald-500 hover:bg-emerald-600 text-black font-mono font-bold text-xs transition-all shadow-xs"
-                >
-                  <Play size={13} className={isExecuting ? 'animate-spin' : ''} />
-                  <span>{isExecuting ? 'Executing...' : t('sqlite.runQuery')}</span>
-                </button>
-
-                <button
-                  onClick={() => setSqlInput('')}
-                  className="px-3 py-2 rounded-xl bg-zinc-100 dark:bg-neutral-800 hover:bg-zinc-200 dark:hover:bg-neutral-700 text-zinc-600 dark:text-neutral-300 font-mono text-xs font-semibold transition-all"
-                >
-                  {t('sqlite.clearQuery')}
-                </button>
+                {queryResult?.rows && queryResult.rows.length > 0 && (
+                  <div className="flex items-center gap-2">
+                    <button
+                      onClick={() => copyToClipboard(JSON.stringify(queryResult.rows, null, 2))}
+                      className="flex items-center gap-1 px-2.5 py-1 rounded-lg bg-zinc-100 dark:bg-neutral-800 text-zinc-700 dark:text-neutral-300 text-xs font-mono cursor-pointer hover:bg-zinc-200 dark:hover:bg-neutral-700 transition-colors"
+                    >
+                      {copiedQuery ? <Check size={12} className="text-emerald-500" /> : <Copy size={12} />}
+                      <span>JSON</span>
+                    </button>
+                  </div>
+                )}
               </div>
 
-              {queryResult && (
-                <div className="flex items-center gap-3 text-xs font-mono">
-                  <span className="flex items-center gap-1 text-zinc-500">
-                    <Clock size={12} className="text-sky-500" />
-                    <span>{t('sqlite.execTime')}:</span>
-                    <strong className="text-zinc-900 dark:text-white font-bold">{queryResult.executionTimeMs}ms</strong>
-                  </span>
+              {queryResult?.error && (
+                <div className="p-4 rounded-2xl bg-rose-500/10 border border-rose-500/30 text-rose-600 dark:text-rose-300 font-mono text-xs space-y-1">
+                  <div className="flex items-center gap-2 font-bold">
+                    <AlertCircle size={15} />
+                    <span>SQLite Query Syntax / Execution Error:</span>
+                  </div>
+                  <div className="text-rose-500 text-[11px] whitespace-pre-wrap">{queryResult.error}</div>
+                </div>
+              )}
 
-                  {queryResult.rowCount > 0 && (
-                    <span className="flex items-center gap-1 text-zinc-500">
-                      <span>{t('sqlite.rowsReturned')}:</span>
-                      <strong className="text-emerald-500 font-bold">{queryResult.rowCount}</strong>
-                    </span>
-                  )}
+              {queryResult?.success && queryResult.rows.length > 0 && (
+                <div className="rounded-2xl border border-zinc-200 dark:border-neutral-800 overflow-hidden font-mono text-xs">
+                  <div className="overflow-x-auto max-h-96 scrollbar-thin">
+                    <table className="w-full text-left border-collapse">
+                      <thead className="bg-zinc-100 dark:bg-neutral-950 border-b border-zinc-200 dark:border-neutral-800 sticky top-0">
+                        <tr>
+                          {queryResult.columns.map((col) => (
+                            <th key={col} className="p-2.5 text-[11px] font-bold text-zinc-700 dark:text-neutral-300">
+                              {col}
+                            </th>
+                          ))}
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-zinc-200 dark:divide-neutral-800/80 bg-white dark:bg-neutral-900">
+                        {queryResult.rows.map((row, idx) => (
+                          <tr key={idx} className="hover:bg-zinc-50 dark:hover:bg-neutral-800/50 transition-colors">
+                            {queryResult.columns.map((col) => (
+                              <td key={col} className="p-2.5 text-zinc-800 dark:text-neutral-300 text-[11px] truncate max-w-xs">
+                                {row[col] === null || row[col] === undefined
+                                  ? <span className="text-zinc-400 italic">null</span>
+                                  : typeof row[col] === 'object'
+                                  ? JSON.stringify(row[col])
+                                  : String(row[col])}
+                              </td>
+                            ))}
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              )}
 
-                  {queryResult.changes !== undefined && queryResult.changes > 0 && (
-                    <span className="flex items-center gap-1 text-zinc-500">
-                      <span>{t('sqlite.affectedRows')}:</span>
-                      <strong className="text-purple-400 font-bold">{queryResult.changes}</strong>
-                    </span>
-                  )}
+              {queryResult?.success && queryResult.rows.length === 0 && !queryResult.error && (
+                <div className="p-8 rounded-2xl bg-zinc-50 dark:bg-neutral-950 border border-zinc-200/80 dark:border-neutral-800 text-center font-mono text-xs text-zinc-500">
+                  {t('sqlite.emptyResults')}
                 </div>
               )}
             </div>
           </div>
 
-          {/* Results Viewer Bento */}
-          <div className="p-6 rounded-3xl bg-white dark:bg-neutral-900 border border-zinc-200 dark:border-neutral-800 shadow-xs space-y-4">
-            <div className="flex items-center justify-between">
-              <span className="font-mono text-xs font-bold text-zinc-800 dark:text-neutral-200 flex items-center gap-2">
-                <TableIcon size={15} className="text-sky-500" />
-                Query Execution Result
-              </span>
-
-              {queryResult?.rows && queryResult.rows.length > 0 && (
+          {/* Right Column: Query History Sidebar (4 cols) */}
+          <div className="xl:col-span-4 space-y-4">
+            <div className="p-5 rounded-3xl bg-white dark:bg-neutral-900 border border-zinc-200 dark:border-neutral-800 shadow-xs space-y-4">
+              {/* Sidebar Header */}
+              <div className="flex items-center justify-between gap-2 border-b border-zinc-100 dark:border-neutral-800/80 pb-3">
                 <div className="flex items-center gap-2">
+                  <div className="w-7 h-7 rounded-xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 flex items-center justify-center border border-emerald-500/20">
+                    <History size={14} />
+                  </div>
+                  <div>
+                    <h3 className="text-xs font-mono font-bold text-zinc-900 dark:text-white">
+                      {t('sqlite.historyTitle')}
+                    </h3>
+                    <span className="text-[10px] font-mono text-zinc-400 block">
+                      {queryHistory.length} {t('sqlite.historyTotal')}
+                    </span>
+                  </div>
+                </div>
+
+                {queryHistory.length > 0 && (
                   <button
-                    onClick={() => copyToClipboard(JSON.stringify(queryResult.rows, null, 2))}
-                    className="flex items-center gap-1 px-2.5 py-1 rounded-lg bg-zinc-100 dark:bg-neutral-800 text-zinc-700 dark:text-neutral-300 text-xs font-mono"
+                    id="sqlite-clear-history-btn"
+                    onClick={handleClearHistory}
+                    title={t('sqlite.historyClear')}
+                    className="flex items-center gap-1 px-2.5 py-1 rounded-lg text-zinc-400 hover:text-rose-500 hover:bg-rose-500/10 text-[11px] font-mono transition-colors cursor-pointer"
                   >
-                    {copiedQuery ? <Check size={12} className="text-emerald-500" /> : <Copy size={12} />}
-                    <span>JSON</span>
+                    <Trash2 size={13} />
+                    <span>{t('sqlite.historyClear')}</span>
+                  </button>
+                )}
+              </div>
+
+              {/* Search & Filter Bar */}
+              <div className="space-y-2">
+                <div className="relative">
+                  <Search size={13} className="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-400" />
+                  <input
+                    type="text"
+                    value={historySearch}
+                    onChange={(e) => setHistorySearch(e.target.value)}
+                    placeholder={t('sqlite.historySearch')}
+                    className="w-full pl-8 pr-7 py-1.5 rounded-xl bg-zinc-100 dark:bg-neutral-800/80 border border-zinc-200 dark:border-neutral-700 text-xs font-mono text-zinc-800 dark:text-neutral-200 placeholder-zinc-400 focus:outline-none focus:border-emerald-500"
+                  />
+                  {historySearch && (
+                    <button
+                      onClick={() => setHistorySearch('')}
+                      className="absolute right-2.5 top-1/2 -translate-y-1/2 text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200"
+                    >
+                      <X size={12} />
+                    </button>
+                  )}
+                </div>
+
+                {/* Status Filter Buttons */}
+                <div className="flex items-center gap-1.5 text-[11px] font-mono">
+                  <button
+                    onClick={() => setHistoryFilter('all')}
+                    className={`px-2.5 py-1 rounded-lg transition-all font-semibold cursor-pointer ${
+                      historyFilter === 'all'
+                        ? 'bg-zinc-900 dark:bg-white text-white dark:text-black shadow-xs'
+                        : 'bg-zinc-100 dark:bg-neutral-800 text-zinc-500 dark:text-neutral-400 hover:bg-zinc-200 dark:hover:bg-neutral-700'
+                    }`}
+                  >
+                    {t('sqlite.historyAll')} ({queryHistory.length})
+                  </button>
+                  <button
+                    onClick={() => setHistoryFilter('success')}
+                    className={`px-2.5 py-1 rounded-lg transition-all font-semibold flex items-center gap-1 cursor-pointer ${
+                      historyFilter === 'success'
+                        ? 'bg-emerald-500 text-black font-bold shadow-xs'
+                        : 'bg-zinc-100 dark:bg-neutral-800 text-zinc-500 dark:text-neutral-400 hover:bg-zinc-200 dark:hover:bg-neutral-700'
+                    }`}
+                  >
+                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+                    {t('sqlite.historySuccess')} ({queryHistory.filter((h) => h.success).length})
+                  </button>
+                  <button
+                    onClick={() => setHistoryFilter('error')}
+                    className={`px-2.5 py-1 rounded-lg transition-all font-semibold flex items-center gap-1 cursor-pointer ${
+                      historyFilter === 'error'
+                        ? 'bg-rose-500 text-white font-bold shadow-xs'
+                        : 'bg-zinc-100 dark:bg-neutral-800 text-zinc-500 dark:text-neutral-400 hover:bg-zinc-200 dark:hover:bg-neutral-700'
+                    }`}
+                  >
+                    <span className="w-1.5 h-1.5 rounded-full bg-rose-500" />
+                    {t('sqlite.historyFailed')} ({queryHistory.filter((h) => !h.success).length})
                   </button>
                 </div>
-              )}
-            </div>
-
-            {queryResult?.error && (
-              <div className="p-4 rounded-2xl bg-rose-500/10 border border-rose-500/30 text-rose-600 dark:text-rose-300 font-mono text-xs space-y-1">
-                <div className="flex items-center gap-2 font-bold">
-                  <AlertCircle size={15} />
-                  <span>SQLite Query Syntax / Execution Error:</span>
-                </div>
-                <div className="text-rose-500 text-[11px] whitespace-pre-wrap">{queryResult.error}</div>
               </div>
-            )}
 
-            {queryResult?.success && queryResult.rows.length > 0 && (
-              <div className="rounded-2xl border border-zinc-200 dark:border-neutral-800 overflow-hidden font-mono text-xs">
-                <div className="overflow-x-auto max-h-96 scrollbar-thin">
-                  <table className="w-full text-left border-collapse">
-                    <thead className="bg-zinc-100 dark:bg-neutral-950 border-b border-zinc-200 dark:border-neutral-800 sticky top-0">
-                      <tr>
-                        {queryResult.columns.map((col) => (
-                          <th key={col} className="p-2.5 text-[11px] font-bold text-zinc-700 dark:text-neutral-300">
-                            {col}
-                          </th>
+              {/* History List */}
+              <div className="space-y-2.5 max-h-[520px] overflow-y-auto pr-1 scrollbar-thin">
+                {filteredHistory.length === 0 ? (
+                  <div className="p-6 rounded-2xl bg-zinc-50 dark:bg-neutral-950 border border-dashed border-zinc-200 dark:border-neutral-800 text-center space-y-2">
+                    <History size={20} className="mx-auto text-zinc-400" />
+                    <p className="text-xs font-mono text-zinc-500 dark:text-neutral-400">
+                      {t('sqlite.historyEmpty')}
+                    </p>
+                    <div className="pt-2 flex flex-col gap-1.5">
+                      <span className="text-[10px] font-mono text-zinc-400 uppercase tracking-wider">Try Presets:</span>
+                      <div className="flex flex-wrap gap-1 justify-center">
+                        {SQL_PRESETS.slice(0, 3).map((p, idx) => (
+                          <button
+                            key={idx}
+                            onClick={() => {
+                              setSqlInput(p.sql);
+                              handleExecuteSql(p.sql);
+                            }}
+                            className="px-2 py-1 rounded-lg bg-zinc-100 dark:bg-neutral-800 text-[10px] font-mono text-zinc-700 dark:text-neutral-300 hover:bg-emerald-500/20 hover:text-emerald-600 dark:hover:text-emerald-400 transition-colors"
+                          >
+                            Preset #{idx + 1}
+                          </button>
                         ))}
-                      </tr>
-                    </thead>
-                    <tbody className="divide-y divide-zinc-200 dark:divide-neutral-800/80 bg-white dark:bg-neutral-900">
-                      {queryResult.rows.map((row, idx) => (
-                        <tr key={idx} className="hover:bg-zinc-50 dark:hover:bg-neutral-800/50 transition-colors">
-                          {queryResult.columns.map((col) => (
-                            <td key={col} className="p-2.5 text-zinc-800 dark:text-neutral-300 text-[11px] truncate max-w-xs">
-                              {row[col] === null || row[col] === undefined
-                                ? <span className="text-zinc-400 italic">null</span>
-                                : typeof row[col] === 'object'
-                                ? JSON.stringify(row[col])
-                                : String(row[col])}
-                            </td>
-                          ))}
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              </div>
-            )}
+                      </div>
+                    </div>
+                  </div>
+                ) : (
+                  filteredHistory.map((item) => (
+                    <motion.div
+                      key={item.id}
+                      initial={{ opacity: 0, y: 4 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      className="group p-3 rounded-2xl bg-zinc-50 dark:bg-neutral-950 border border-zinc-200/80 dark:border-neutral-800 hover:border-zinc-300 dark:hover:border-neutral-700 transition-all space-y-2"
+                    >
+                      {/* Top Info Row */}
+                      <div className="flex items-center justify-between gap-1 text-[10px] font-mono">
+                        <div className="flex items-center gap-1.5">
+                          {item.success ? (
+                            <span className="flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 font-bold">
+                              <CheckCircle2 size={10} />
+                              <span>{item.executionTimeMs}ms</span>
+                            </span>
+                          ) : (
+                            <span className="flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-rose-500/10 text-rose-600 dark:text-rose-400 border border-rose-500/20 font-bold">
+                              <XCircle size={10} />
+                              <span>ERR</span>
+                            </span>
+                          )}
 
-            {queryResult?.success && queryResult.rows.length === 0 && !queryResult.error && (
-              <div className="p-8 rounded-2xl bg-zinc-50 dark:bg-neutral-950 border border-zinc-200/80 dark:border-neutral-800 text-center font-mono text-xs text-zinc-500">
-                {t('sqlite.emptyResults')}
+                          {item.rowCount !== undefined && item.rowCount > 0 && (
+                            <span className="text-zinc-500 dark:text-neutral-400">
+                              {item.rowCount} rows
+                            </span>
+                          )}
+
+                          {item.changes !== undefined && item.changes > 0 && (
+                            <span className="text-purple-500 font-bold">
+                              +{item.changes} aff
+                            </span>
+                          )}
+                        </div>
+
+                        <span className="text-zinc-400 flex items-center gap-1">
+                          <Clock size={10} />
+                          {item.timestamp}
+                        </span>
+                      </div>
+
+                      {/* SQL Preview Snippet */}
+                      <div className="p-2 rounded-xl bg-zinc-950 border border-zinc-800/80 text-emerald-400/90 font-mono text-[11px] leading-relaxed break-all line-clamp-3">
+                        {item.sql}
+                      </div>
+
+                      {/* Error details snippet if any */}
+                      {item.error && (
+                        <div className="text-[10px] font-mono text-rose-500 dark:text-rose-400 bg-rose-500/5 p-1.5 rounded-lg border border-rose-500/20 truncate" title={item.error}>
+                          {item.error}
+                        </div>
+                      )}
+
+                      {/* Action buttons */}
+                      <div className="flex items-center justify-between gap-1 pt-1 border-t border-zinc-200/50 dark:border-neutral-800/60">
+                        <div className="flex items-center gap-1.5">
+                          <button
+                            onClick={() => handleReRunFromHistory(item.sql)}
+                            disabled={isExecuting}
+                            title={t('sqlite.historyReRun')}
+                            className="flex items-center gap-1 px-2 py-1 rounded-lg bg-emerald-500/15 hover:bg-emerald-500/25 text-emerald-600 dark:text-emerald-400 text-[11px] font-mono font-bold transition-colors cursor-pointer"
+                          >
+                            <Play size={11} className={isExecuting ? 'animate-spin' : ''} />
+                            <span>{t('sqlite.historyReRun')}</span>
+                          </button>
+
+                          <button
+                            onClick={() => handleLoadIntoEditor(item.sql)}
+                            title={t('sqlite.historyLoad')}
+                            className="flex items-center gap-1 px-2 py-1 rounded-lg bg-zinc-200/70 dark:bg-neutral-800 hover:bg-zinc-300 dark:hover:bg-neutral-700 text-zinc-700 dark:text-neutral-300 text-[11px] font-mono font-semibold transition-colors cursor-pointer"
+                          >
+                            <ArrowUpRight size={11} />
+                            <span>{t('sqlite.historyLoad')}</span>
+                          </button>
+                        </div>
+
+                        <button
+                          onClick={() => handleCopyHistoryItem(item.id, item.sql)}
+                          title="Copy SQL"
+                          className="p-1.5 rounded-lg text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200 hover:bg-zinc-200/60 dark:hover:bg-neutral-800 transition-colors cursor-pointer"
+                        >
+                          {copiedHistoryId === item.id ? (
+                            <Check size={12} className="text-emerald-500" />
+                          ) : (
+                            <Copy size={12} />
+                          )}
+                        </button>
+                      </div>
+                    </motion.div>
+                  ))
+                )}
               </div>
-            )}
+            </div>
           </div>
         </div>
       )}

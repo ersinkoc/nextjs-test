@@ -22,6 +22,7 @@ import {
 } from 'lucide-react';
 import { useI18n } from '../i18n';
 import { ConsoleMonitor } from './ConsoleMonitor';
+import { SystemResources } from './SystemResources';
 
 const COLOR_PRESETS = [
   { name: 'Emerald Next.js', color: '#10b981' },
@@ -174,6 +175,9 @@ export async function register() {
           {t('tools.title')}
         </h2>
       </div>
+
+      {/* Real-time System Resources & D3 Telemetry Widgets */}
+      <SystemResources />
 
       {/* Custom Branding & CSS Variable Override Bento */}
       <div className="p-6 rounded-3xl bg-white dark:bg-neutral-900 border border-zinc-200 dark:border-neutral-800 shadow-2xs space-y-5">
