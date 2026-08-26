@@ -1,0 +1,6 @@
+{
+  "name": "Deneme App",
+  "description": "Next.js tarzı modern ve etkileşimli deneme/playground uygulaması.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
