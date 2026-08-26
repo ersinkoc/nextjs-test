@@ -29,6 +29,56 @@ export interface QueryResult {
   error?: string;
 }
 
+export interface ColumnInfo {
+  cid: number;
+  name: string;
+  type: string;
+  notnull: boolean;
+  dflt_value: any;
+  pk: boolean;
+}
+
+export interface ForeignKeyInfo {
+  id: number;
+  seq: number;
+  targetTable: string;
+  fromColumn: string;
+  toColumn: string;
+  onUpdate: string;
+  onDelete: string;
+}
+
+export interface TableIndexInfo {
+  name: string;
+  unique: boolean;
+  origin: string;
+  partial: boolean;
+}
+
+export interface TableSchemaDetail {
+  name: string;
+  rowCount: number;
+  sql: string;
+  columns: ColumnInfo[];
+  foreignKeys: ForeignKeyInfo[];
+  indexes: TableIndexInfo[];
+  primaryKeys: string[];
+  inferredRelations?: Array<{
+    targetTable: string;
+    fromColumn: string;
+    toColumn: string;
+    relationType: '1:N' | 'N:1' | '1:1';
+  }>;
+}
+
+export interface DbFullSchema {
+  tables: TableSchemaDetail[];
+  totalTables: number;
+  totalColumns: number;
+  totalForeignKeys: number;
+  ddlScript: string;
+}
+
 const startTime = Date.now();
 
 // Resolve persistent storage path
@@ -494,4 +544,259 @@ export async function saveDirectusSettings(url: string, token: string): Promise<
     ['directus_token', token.trim(), now]
   );
   return { success: true };
+}
+
+/**
+ * Get comprehensive schema details for all database tables, columns, indexes, and FK relationships
+ */
+export async function getFullDbSchema(): Promise<DbFullSchema> {
+  const db = await getDb();
+
+  // Get all table definitions from sqlite_master
+  const masterTables = await executeQuery(
+    "SELECT name, sql FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%' ORDER BY name ASC;"
+  );
+
+  const tables: TableSchemaDetail[] = [];
+  let totalColumns = 0;
+  let totalForeignKeys = 0;
+  const ddlParts: string[] = [];
+
+  for (const t of masterTables.rows) {
+    const tableName = t.name;
+    const tableSql = t.sql || '';
+    if (tableSql) ddlParts.push(tableSql + ';');
+
+    // 1. Column details
+    const colRes = await executeQuery(`PRAGMA table_info("${tableName}");`);
+    const columns: ColumnInfo[] = colRes.rows.map((c: any) => ({
+      cid: Number(c.cid),
+      name: String(c.name),
+      type: String(c.type || 'TEXT').toUpperCase(),
+      notnull: Boolean(c.notnull),
+      dflt_value: c.dflt_value,
+      pk: Boolean(c.pk),
+    }));
+    totalColumns += columns.length;
+
+    const primaryKeys = columns.filter((c) => c.pk).map((c) => c.name);
+
+    // 2. Foreign Keys
+    const fkRes = await executeQuery(`PRAGMA foreign_key_list("${tableName}");`);
+    const foreignKeys: ForeignKeyInfo[] = fkRes.rows.map((fk: any) => ({
+      id: Number(fk.id),
+      seq: Number(fk.seq),
+      targetTable: String(fk.table),
+      fromColumn: String(fk.from),
+      toColumn: String(fk.to || 'id'),
+      onUpdate: String(fk.on_update || 'NO ACTION'),
+      onDelete: String(fk.on_delete || 'NO ACTION'),
+    }));
+    totalForeignKeys += foreignKeys.length;
+
+    // 3. Indexes
+    const idxRes = await executeQuery(`PRAGMA index_list("${tableName}");`);
+    const indexes: TableIndexInfo[] = idxRes.rows.map((idx: any) => ({
+      name: String(idx.name),
+      unique: Boolean(idx.unique),
+      origin: String(idx.origin || 'c'),
+      partial: Boolean(idx.partial),
+    }));
+
+    // 4. Row count
+    let rowCount = 0;
+    try {
+      const countRes = await executeQuery(`SELECT COUNT(*) as count FROM "${tableName}";`);
+      rowCount = countRes.rows[0]?.count || 0;
+    } catch {
+      rowCount = 0;
+    }
+
+    // 5. Inferred relationships (heuristics based on naming conventions)
+    const inferredRelations: Array<{
+      targetTable: string;
+      fromColumn: string;
+      toColumn: string;
+      relationType: '1:N' | 'N:1' | '1:1';
+    }> = [];
+
+    // Check columns like 'suite_id', 'run_id', 'category_id', 'note_id', 'user_id', 'collection_name'
+    for (const col of columns) {
+      if (col.name.endsWith('_id') || col.name.endsWith('Id')) {
+        const baseName = col.name.replace(/(_id|Id)$/, '');
+        // Match against existing table names (singular or plural)
+        for (const other of masterTables.rows) {
+          const otherName = other.name;
+          if (otherName === tableName) continue;
+          if (
+            otherName.toLowerCase() === baseName.toLowerCase() ||
+            otherName.toLowerCase() === `${baseName}s`.toLowerCase() ||
+            otherName.toLowerCase().includes(baseName.toLowerCase())
+          ) {
+            // Only add if not already in explicit foreign keys
+            const exists = foreignKeys.some(
+              (fk) => fk.targetTable === otherName && fk.fromColumn === col.name
+            );
+            if (!exists) {
+              inferredRelations.push({
+                targetTable: otherName,
+                fromColumn: col.name,
+                toColumn: 'id',
+                relationType: 'N:1',
+              });
+            }
+          }
+        }
+      }
+    }
+
+    tables.push({
+      name: tableName,
+      rowCount,
+      sql: tableSql,
+      columns,
+      foreignKeys,
+      indexes,
+      primaryKeys,
+      inferredRelations: inferredRelations.length > 0 ? inferredRelations : undefined,
+    });
+  }
+
+  return {
+    tables,
+    totalTables: tables.length,
+    totalColumns,
+    totalForeignKeys,
+    ddlScript: ddlParts.join('\n\n'),
+  };
+}
+
+/**
+ * Seed a rich relational schema with explicit Foreign Keys
+ */
+export async function seedRelationalSchema(): Promise<{ success: boolean; message: string }> {
+  const db = await getDb();
+  const now = new Date().toISOString();
+
+  const ddl = `
+    -- Categories Table
+    CREATE TABLE IF NOT EXISTS notes_categories (
+      id TEXT PRIMARY KEY,
+      name TEXT NOT NULL UNIQUE,
+      color TEXT NOT NULL,
+      slug TEXT NOT NULL,
+      icon TEXT DEFAULT 'folder'
+    );
+
+    -- Suites Table
+    CREATE TABLE IF NOT EXISTS arena_test_suites (
+      id TEXT PRIMARY KEY,
+      suite_name TEXT NOT NULL,
+      category TEXT NOT NULL,
+      description TEXT,
+      created_at TEXT NOT NULL
+    );
+
+    -- Test Assertions (FK -> arena_test_runs)
+    CREATE TABLE IF NOT EXISTS test_assertions (
+      id TEXT PRIMARY KEY,
+      run_id TEXT NOT NULL,
+      assertion_type TEXT NOT NULL,
+      expected_val TEXT NOT NULL,
+      actual_val TEXT NOT NULL,
+      status TEXT NOT NULL DEFAULT 'passed',
+      latency_ms REAL NOT NULL DEFAULT 0.0,
+      FOREIGN KEY (run_id) REFERENCES arena_test_runs(id) ON DELETE CASCADE
+    );
+
+    -- Note Tags (FK -> notes_persistent)
+    CREATE TABLE IF NOT EXISTS note_tags (
+      id TEXT PRIMARY KEY,
+      note_id TEXT NOT NULL,
+      tag_name TEXT NOT NULL,
+      created_at TEXT NOT NULL,
+      FOREIGN KEY (note_id) REFERENCES notes_persistent(id) ON DELETE CASCADE
+    );
+
+    -- Directus Sync Queue Table (DDL)
+    CREATE TABLE IF NOT EXISTS directus_sync_queue (
+      id TEXT PRIMARY KEY,
+      collection_name TEXT NOT NULL,
+      action TEXT NOT NULL,
+      payload_json TEXT NOT NULL,
+      sync_status TEXT DEFAULT 'pending',
+      retries INTEGER DEFAULT 0,
+      created_at TEXT NOT NULL
+    );
+  `;
+
+  if (db.exec) {
+    db.exec(ddl);
+  }
+
+  // Seed sample rows for categories
+  const categories = [
+    ['cat-001', 'Core Infrastructure', '#10b981', 'core-infra', 'cpu'],
+    ['cat-002', 'Next.js 16 Runtime', '#6366f1', 'next16-runtime', 'zap'],
+    ['cat-003', 'Database & Disk WAL', '#0ea5e9', 'db-wal', 'database'],
+    ['cat-004', 'Directus Headless CMS', '#a855f7', 'directus-cms', 'layers'],
+  ];
+
+  for (const cat of categories) {
+    await executeQuery(
+      'INSERT OR REPLACE INTO notes_categories (id, name, color, slug, icon) VALUES (?, ?, ?, ?, ?)',
+      cat
+    );
+  }
+
+  // Seed sample test suites
+  const suites = [
+    ['suite-001', 'PPR & Streaming Concurrency', 'PPR & Suspense', 'High-load partial pre-rendering validation', now],
+    ['suite-002', 'Turbopack Rust Compiler AST', 'Turbopack Cache', 'Rust compiler bytecode hash & AST integrity', now],
+    ['suite-003', 'SQLite Volume Durability & WAL', 'Disk Storage', 'Atomic disk write benchmarks with WAL flush', now],
+  ];
+
+  for (const suite of suites) {
+    await executeQuery(
+      'INSERT OR REPLACE INTO arena_test_suites (id, suite_name, category, description, created_at) VALUES (?, ?, ?, ?, ?)',
+      suite
+    );
+  }
+
+  // Seed sample assertions for existing runs
+  const assertions = [
+    ['ast-001', 'run-001', 'HTTP Status Code', '200 OK', '200 OK', 'passed', 0.8],
+    ['ast-002', 'run-001', 'Hydration Mismatch Count', '0 errors', '0 errors', 'passed', 1.2],
+    ['ast-003', 'run-002', 'Turbopack Cache Hit Rate', '> 98%', '99.4%', 'passed', 0.4],
+    ['ast-004', 'run-003', 'AES-256 GCM Verification', 'Valid Token', 'Valid Token', 'passed', 2.1],
+    ['ast-005', 'run-005', 'WAL Disk Write Latency', '< 5.0ms', '0.9ms', 'passed', 0.9],
+  ];
+
+  for (const ast of assertions) {
+    await executeQuery(
+      'INSERT OR REPLACE INTO test_assertions (id, run_id, assertion_type, expected_val, actual_val, status, latency_ms) VALUES (?, ?, ?, ?, ?, ?, ?)',
+      ast
+    );
+  }
+
+  // Seed note tags
+  const tags = [
+    ['tag-001', 'note-001', 'Docker', now],
+    ['tag-002', 'note-001', 'Persistent-Volume', now],
+    ['tag-003', 'note-002', 'Directus', now],
+    ['tag-004', 'note-002', 'Bridge-Network', now],
+    ['tag-005', 'note-003', 'WAL-Checkpoint', now],
+  ];
+
+  for (const tag of tags) {
+    await executeQuery(
+      'INSERT OR REPLACE INTO note_tags (id, note_id, tag_name, created_at) VALUES (?, ?, ?, ?)',
+      tag
+    );
+  }
+
+  return {
+    success: true,
+    message: 'Relational schema created with 5 interconnected tables (notes_categories, arena_test_suites, test_assertions, note_tags, directus_sync_queue) and explicit foreign keys.',
+  };
 }

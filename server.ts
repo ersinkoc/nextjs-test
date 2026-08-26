@@ -9,6 +9,8 @@ import {
   testDiskDurability,
   getDirectusSettings,
   saveDirectusSettings,
+  getFullDbSchema,
+  seedRelationalSchema,
 } from './src/server/sqlite';
 
 const PORT = 3000;
@@ -97,6 +99,26 @@ async function startServer() {
     try {
       const { payloadSizeKb = 16 } = req.body;
       const result = await testDiskDurability(Number(payloadSizeKb) || 16);
+      res.json(result);
+    } catch (err: any) {
+      res.status(500).json({ error: err.message });
+    }
+  });
+
+  // Get full database schema with tables, columns, indexes, PKs and Foreign Keys
+  app.get('/api/sqlite/schema', async (req, res) => {
+    try {
+      const schema = await getFullDbSchema();
+      res.json(schema);
+    } catch (err: any) {
+      res.status(500).json({ error: err.message });
+    }
+  });
+
+  // Seed relational schema with explicit FK relationships
+  app.post('/api/sqlite/seed-relational', async (req, res) => {
+    try {
+      const result = await seedRelationalSchema();
       res.json(result);
     } catch (err: any) {
       res.status(500).json({ error: err.message });

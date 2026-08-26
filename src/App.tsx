@@ -14,6 +14,7 @@ import { CompilerInspector } from './components/CompilerInspector';
 import { DynamicCacheLab } from './components/DynamicCacheLab';
 import { OgMetadataStudio } from './components/OgMetadataStudio';
 import { SqliteStudio } from './components/SqliteStudio';
+import { BreadcrumbBar } from './components/BreadcrumbBar';
 import { ActiveTab, NoteItem } from './types';
 import { motion, AnimatePresence } from 'motion/react';
 import { I18nProvider, useI18n } from './i18n';
@@ -87,6 +88,14 @@ function AppContent() {
     if (savedBrandColor) {
       document.documentElement.style.setProperty('--brand-primary', savedBrandColor);
     }
+    const savedSecondary = localStorage.getItem('nextjs_arena_brand_secondary');
+    if (savedSecondary) {
+      document.documentElement.style.setProperty('--brand-secondary', savedSecondary);
+    }
+    const savedAccent = localStorage.getItem('nextjs_arena_brand_accent');
+    if (savedAccent) {
+      document.documentElement.style.setProperty('--brand-accent', savedAccent);
+    }
   }, []);
 
   useEffect(() => {
@@ -143,6 +152,13 @@ function AppContent() {
 
         {/* Dynamic Tab Body */}
         <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
+          {/* Dynamic Hierarchy Breadcrumb Bar */}
+          <BreadcrumbBar
+            activeTab={activeTab}
+            setActiveTab={setActiveTab}
+            onOpenCommandPalette={() => setIsCommandOpen(true)}
+          />
+
           <AnimatePresence mode="wait">
             {activeTab === 'overview' && (
               <motion.div

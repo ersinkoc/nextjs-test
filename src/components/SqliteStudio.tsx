@@ -32,10 +32,12 @@ import {
   CheckCircle2,
   XCircle,
   ArrowUpRight,
-  X
+  X,
+  GitFork
 } from 'lucide-react';
 import { useI18n } from '../i18n';
 import { motion, AnimatePresence } from 'motion/react';
+import { SqliteErViewer } from './SqliteErViewer';
 
 interface TableDetail {
   name: string;
@@ -139,7 +141,7 @@ export const SqliteStudio: React.FC = () => {
   // Status & Loading states
   const [dbStatus, setDbStatus] = useState<DbStatus | null>(null);
   const [isLoadingStatus, setIsLoadingStatus] = useState<boolean>(false);
-  const [activeTab, setActiveTab] = useState<'query' | 'tables' | 'directus' | 'docker'>('query');
+  const [activeTab, setActiveTab] = useState<'query' | 'tables' | 'schema' | 'directus' | 'docker'>('query');
 
   // SQL Query Runner state
   const [sqlInput, setSqlInput] = useState<string>(SQL_PRESETS[0].sql);
@@ -659,6 +661,19 @@ export const SqliteStudio: React.FC = () => {
         >
           <TableIcon size={14} />
           <span>{t('sqlite.tableBrowser')} ({dbStatus?.tablesCount || 0})</span>
+        </button>
+
+        <button
+          id="sqlite-schema-tab-btn"
+          onClick={() => setActiveTab('schema')}
+          className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-mono font-bold transition-all ${
+            activeTab === 'schema'
+              ? 'bg-zinc-900 dark:bg-white text-white dark:text-black shadow-xs'
+              : 'bg-zinc-100 dark:bg-neutral-800 text-zinc-600 dark:text-neutral-300 hover:bg-zinc-200 dark:hover:bg-neutral-700'
+          }`}
+        >
+          <GitFork size={14} className="text-emerald-500" />
+          <span>{t('sqlite.schemaTab')}</span>
         </button>
 
         <button
@@ -1183,7 +1198,18 @@ export const SqliteStudio: React.FC = () => {
         </div>
       )}
 
-      {/* TAB 3: Directus Container Bridge */}
+      {/* TAB 3: ER Schema Graph (D3.js) */}
+      {activeTab === 'schema' && (
+        <SqliteErViewer
+          onNavigateToQuery={(sql) => {
+            setSqlInput(sql);
+            setActiveTab('query');
+          }}
+          onRefreshStatus={fetchDbStatus}
+        />
+      )}
+
+      {/* TAB 4: Directus Container Bridge */}
       {activeTab === 'directus' && (
         <div className="space-y-6">
           <div className="p-6 md:p-8 rounded-3xl bg-white dark:bg-neutral-900 border border-zinc-200 dark:border-neutral-800 shadow-xs space-y-6">
