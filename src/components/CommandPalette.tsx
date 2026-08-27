@@ -24,6 +24,7 @@ import {
 import { ActiveTab } from '../types';
 import { useI18n } from '../i18n';
 import { motion, AnimatePresence } from 'motion/react';
+import { audioFx } from '../utils/audioFx';
 
 interface CommandPaletteProps {
   isOpen: boolean;
@@ -243,10 +244,11 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({
                   <button
                     key={cmd.id}
                     onClick={() => {
+                      audioFx.playTabSwitch();
                       onSelectTab(cmd.id);
                       onClose();
                     }}
-                    className="w-full flex items-center justify-between p-3 rounded-2xl text-left hover:bg-zinc-100 dark:hover:bg-neutral-800/80 transition-colors group"
+                    className="w-full flex items-center justify-between p-3 rounded-2xl text-left hover:bg-zinc-100 dark:hover:bg-neutral-800/80 transition-colors group cursor-pointer"
                   >
                     <div className="flex items-center gap-3">
                       <div className="w-8 h-8 rounded-xl bg-zinc-100 dark:bg-neutral-800 flex items-center justify-center text-zinc-600 dark:text-neutral-300 group-hover:bg-emerald-500 group-hover:text-black transition-colors">

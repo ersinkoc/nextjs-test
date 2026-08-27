@@ -31,6 +31,7 @@ import {
 import { ActiveTab } from '../types';
 import { useI18n } from '../i18n';
 import { motion, AnimatePresence } from 'motion/react';
+import { audioFx } from '../utils/audioFx';
 
 interface BreadcrumbBarProps {
   activeTab: ActiveTab;
@@ -284,7 +285,10 @@ export const BreadcrumbBar: React.FC<BreadcrumbBarProps> = ({
           <li className="flex items-center">
             <button
               id="breadcrumb-home-btn"
-              onClick={() => setActiveTab('overview')}
+              onClick={() => {
+                audioFx.playClick();
+                setActiveTab('overview');
+              }}
               title={language === 'tr' ? 'Ana Sayfaya Dön' : 'Return to Overview'}
               className="flex items-center gap-1.5 px-2 py-1 rounded-lg text-zinc-500 dark:text-neutral-400 hover:text-zinc-900 dark:hover:text-white hover:bg-zinc-100 dark:hover:bg-neutral-800 transition-colors cursor-pointer"
             >
@@ -340,6 +344,7 @@ export const BreadcrumbBar: React.FC<BreadcrumbBarProps> = ({
                         key={item.id}
                         id={`breadcrumb-switch-${item.id}`}
                         onClick={() => {
+                          audioFx.playTabSwitch();
                           setActiveTab(item.id);
                           setIsCategoryMenuOpen(false);
                         }}
