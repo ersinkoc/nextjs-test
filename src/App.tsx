@@ -19,6 +19,7 @@ import { SqliteStudio } from './components/SqliteStudio';
 import { DockerCockpit } from './components/DockerCockpit';
 import { ServerActionsLab } from './components/ServerActionsLab';
 import { MiddlewareLab } from './components/MiddlewareLab';
+import { EdgeScraperStudio } from './components/EdgeScraperStudio';
 import { BreadcrumbBar } from './components/BreadcrumbBar';
 import { ActiveTab, NoteItem } from './types';
 import { motion, AnimatePresence } from 'motion/react';
@@ -192,6 +193,18 @@ function AppContent() {
                 <div>
                   <ApiSimulator />
                 </div>
+              </motion.div>
+            )}
+
+            {activeTab === 'edge-scraper' && (
+              <motion.div
+                key="edge-scraper"
+                initial={{ opacity: 0, y: 8 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -8 }}
+                transition={{ duration: 0.15 }}
+              >
+                <EdgeScraperStudio />
               </motion.div>
             )}
 

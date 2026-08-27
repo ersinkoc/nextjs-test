@@ -25,7 +25,8 @@ import {
   Send,
   Shuffle,
   Gauge,
-  Radio
+  Radio,
+  Globe
 } from 'lucide-react';
 import { ActiveTab } from '../types';
 import { useI18n } from '../i18n';
@@ -81,6 +82,14 @@ export const BreadcrumbBar: React.FC<BreadcrumbBarProps> = ({
           badge: 'Live',
           badgeColor: 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20',
           routeSlug: 'overview',
+        },
+        {
+          id: 'edge-scraper',
+          labelKey: 'nav.edgeScraper',
+          icon: Globe,
+          badge: 'Crawler & RSC',
+          badgeColor: 'bg-cyan-500/10 text-cyan-600 dark:text-cyan-400 border-cyan-500/20',
+          routeSlug: 'edge-scraper',
         },
         {
           id: 'docker-cockpit',

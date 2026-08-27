@@ -22,11 +22,13 @@ import {
   Send,
   Shuffle,
   Gauge,
-  Radio
+  Radio,
+  Globe
 } from 'lucide-react';
 import { ActiveTab } from '../types';
 import { useI18n } from '../i18n';
 import { motion } from 'motion/react';
+import { audioFx } from '../utils/audioFx';
 
 interface SidebarProps {
   activeTab: ActiveTab;
@@ -55,11 +57,18 @@ export const Sidebar: React.FC<SidebarProps> = ({
           badgeColor: 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20',
         },
         {
+          id: 'edge-scraper' as ActiveTab,
+          labelKey: 'nav.edgeScraper',
+          icon: Globe,
+          badge: 'Crawler & RSC',
+          badgeColor: 'bg-cyan-500/10 text-cyan-600 dark:text-cyan-400 border-cyan-500/20',
+        },
+        {
           id: 'docker-cockpit' as ActiveTab,
           labelKey: 'nav.dockerCockpit',
           icon: Container,
           badge: 'Docker',
-          badgeColor: 'bg-cyan-500/10 text-cyan-600 dark:text-cyan-400 border-cyan-500/20',
+          badgeColor: 'bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 border-indigo-500/20',
         },
         {
           id: 'api-simulator' as ActiveTab,
@@ -207,8 +216,11 @@ export const Sidebar: React.FC<SidebarProps> = ({
 
         <button
           id="toggle-sidebar-btn"
-          onClick={() => setIsCollapsed(!isCollapsed)}
-          className="w-7 h-7 rounded-lg flex items-center justify-center text-zinc-400 hover:text-zinc-900 dark:hover:text-white hover:bg-zinc-100 dark:hover:bg-neutral-800 transition-colors"
+          onClick={() => {
+            audioFx.playClick();
+            setIsCollapsed(!isCollapsed);
+          }}
+          className="w-7 h-7 rounded-lg flex items-center justify-center text-zinc-400 hover:text-zinc-900 dark:hover:text-white hover:bg-zinc-100 dark:hover:bg-neutral-800 transition-colors cursor-pointer"
           title={isCollapsed ? t('sidebar.expand') : t('sidebar.collapse')}
         >
           {isCollapsed ? <ChevronRight size={16} /> : <ChevronLeft size={16} />}
@@ -232,9 +244,12 @@ export const Sidebar: React.FC<SidebarProps> = ({
                   <button
                     key={item.id}
                     id={`nav-tab-${item.id}`}
-                    onClick={() => setActiveTab(item.id)}
+                    onClick={() => {
+                      audioFx.playTabSwitch();
+                      setActiveTab(item.id);
+                    }}
                     title={isCollapsed ? t(item.labelKey) : undefined}
-                    className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-medium transition-all group relative ${
+                    className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-medium transition-all group relative cursor-pointer ${
                       isActive
                         ? 'bg-zinc-900 text-white dark:bg-neutral-800 dark:text-white shadow-sm font-semibold'
                         : 'text-zinc-600 dark:text-neutral-400 hover:text-zinc-900 dark:hover:text-neutral-200 hover:bg-zinc-100 dark:hover:bg-neutral-800/60'

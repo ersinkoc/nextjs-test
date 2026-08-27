@@ -18,7 +18,8 @@ import {
   Send,
   Shuffle,
   Gauge,
-  Radio
+  Radio,
+  Globe
 } from 'lucide-react';
 import { ActiveTab } from '../types';
 import { useI18n } from '../i18n';
@@ -45,6 +46,13 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({
       category: 'Navigation',
       icon: LayoutDashboard,
       keywords: 'dashboard bento metrics overview home',
+    },
+    {
+      id: 'edge-scraper' as ActiveTab,
+      title: t('nav.edgeScraper'),
+      category: 'Edge & Crawler',
+      icon: Globe,
+      keywords: 'scraper web crawler rsc flight react server component turbopack ast benchmark race ttfb open graph headers',
     },
     {
       id: 'docker-cockpit' as ActiveTab,
