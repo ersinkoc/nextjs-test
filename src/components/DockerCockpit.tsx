@@ -477,17 +477,17 @@ export default nextConfig;`
                 <Container size={22} className="animate-pulse" />
               </div>
               <span className="px-2.5 py-0.5 rounded-full text-xs font-mono font-bold bg-cyan-500/10 text-cyan-300 border border-cyan-500/30">
-                Docker & Next.js Container Cockpit
+                {t('docker.title')}
               </span>
               <span className="px-2 py-0.5 rounded-full text-[11px] font-mono bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
-                Standalone Mode
+                {t('docker.badge')}
               </span>
             </div>
             <h1 className="text-2xl sm:text-3xl font-black tracking-tight text-white">
-              Container Runtime & Multi-Stage Deployment
+              {t('docker.heading')}
             </h1>
             <p className="text-sm text-zinc-400 max-w-2xl">
-              Next.js 16.3 standalone production builds, Node 24 V8 memory isolation, cgroups throttling diagnostics, non-root security boundaries, and Docker Compose stack orchestration.
+              {t('docker.desc')}
             </p>
           </div>
 
@@ -498,7 +498,7 @@ export default nextConfig;`
               className="flex items-center gap-2 px-3.5 py-2 rounded-xl bg-zinc-800 hover:bg-zinc-700 text-zinc-200 border border-zinc-700 text-xs font-mono font-semibold transition-all cursor-pointer"
             >
               <RefreshCw size={13} className={isLoading ? 'animate-spin' : ''} />
-              <span>{isLoading ? 'Refreshing...' : 'Refresh Metrics'}</span>
+              <span>{isLoading ? t('docker.refreshing') : t('docker.refreshMetrics')}</span>
             </button>
           </div>
         </div>
@@ -511,10 +511,10 @@ export default nextConfig;`
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2 text-xs font-mono font-bold text-zinc-600 dark:text-neutral-400">
               <Server size={15} className="text-emerald-500" />
-              <span>RUNTIME ENGINE</span>
+              <span>{t('docker.runtimeEngine')}</span>
             </div>
             <span className="px-2 py-0.5 rounded-md text-[10px] font-mono font-bold bg-emerald-500/10 text-emerald-600 dark:text-emerald-400">
-              LTS Active
+              {t('docker.ltsActive')}
             </span>
           </div>
           <div className="mt-3">
@@ -522,7 +522,7 @@ export default nextConfig;`
               {sysInfo?.runtime.nodeVersion || 'v24.x LTS'}
             </div>
             <div className="text-xs text-zinc-500 dark:text-neutral-400 mt-1 flex items-center gap-1.5">
-              <span>V8 Engine:</span>
+              <span>{t('docker.v8Engine')}</span>
               <span className="font-mono font-bold text-zinc-700 dark:text-neutral-300">
                 {sysInfo?.runtime.v8Version || 'v13.4.x'}
               </span>
@@ -539,10 +539,10 @@ export default nextConfig;`
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2 text-xs font-mono font-bold text-zinc-600 dark:text-neutral-400">
               <Activity size={15} className="text-cyan-500" />
-              <span>CONTAINER RSS</span>
+              <span>{t('docker.containerRss')}</span>
             </div>
             <span className="px-2 py-0.5 rounded-md text-[10px] font-mono font-bold bg-cyan-500/10 text-cyan-600 dark:text-cyan-400">
-              Healthy
+              {t('docker.healthy')}
             </span>
           </div>
           <div className="mt-3">
@@ -550,7 +550,7 @@ export default nextConfig;`
               {sysInfo?.memory.rssMb || '48.2'} <span className="text-sm text-zinc-400 font-medium">MB</span>
             </div>
             <div className="text-xs text-zinc-500 dark:text-neutral-400 mt-1 flex items-center gap-1.5">
-              <span>Heap Used:</span>
+              <span>{t('docker.heapUsed')}</span>
               <span className="font-mono font-bold text-zinc-700 dark:text-neutral-300">
                 {sysInfo?.memory.heapUsedMb || '24.5'} MB
               </span>
@@ -567,17 +567,17 @@ export default nextConfig;`
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2 text-xs font-mono font-bold text-zinc-600 dark:text-neutral-400">
               <ShieldCheck size={15} className="text-emerald-500" />
-              <span>CONTAINER SECURITY</span>
+              <span>{t('docker.containerSecurity')}</span>
             </div>
             <span className="px-2 py-0.5 rounded-md text-[10px] font-mono font-bold bg-emerald-500/10 text-emerald-600 dark:text-emerald-400">
-              Non-Root
+              {t('docker.nonRoot')}
             </span>
           </div>
           <div className="mt-3">
             <div className="text-2xl font-black font-mono text-zinc-900 dark:text-white flex items-center gap-2">
               <span>UID {sysInfo?.runtime.uid ?? 1001}</span>
               <span className="text-xs font-normal text-emerald-500 px-1.5 py-0.5 rounded bg-emerald-500/10 font-sans">
-                Safe
+                {t('docker.safe')}
               </span>
             </div>
             <div className="text-xs text-zinc-500 dark:text-neutral-400 mt-1">
@@ -595,10 +595,10 @@ export default nextConfig;`
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2 text-xs font-mono font-bold text-zinc-600 dark:text-neutral-400">
               <Cpu size={15} className="text-purple-500" />
-              <span>PROCESS UPTIME</span>
+              <span>{t('docker.uptime')}</span>
             </div>
             <span className="px-2 py-0.5 rounded-md text-[10px] font-mono font-bold bg-purple-500/10 text-purple-600 dark:text-purple-400">
-              Active
+              {t('docker.active')}
             </span>
           </div>
           <div className="mt-3">
@@ -606,7 +606,7 @@ export default nextConfig;`
               {Math.floor((sysInfo?.runtime.uptimeSec || 120) / 60)}m {Math.floor((sysInfo?.runtime.uptimeSec || 120) % 60)}s
             </div>
             <div className="text-xs text-zinc-500 dark:text-neutral-400 mt-1">
-              Telemetry: <span className="font-mono font-bold text-emerald-500">Disabled (0 Overhead)</span>
+              {t('docker.telemetryStatus')}
             </div>
           </div>
           <div className="mt-4 pt-3 border-t border-zinc-100 dark:border-neutral-800/80 flex items-center justify-between text-[11px] font-mono text-zinc-500 dark:text-neutral-400">
@@ -625,11 +625,11 @@ export default nextConfig;`
               <div className="flex items-center gap-2">
                 <FileCode2 size={18} className="text-cyan-500" />
                 <h2 className="text-base sm:text-lg font-bold text-zinc-900 dark:text-white">
-                  Multi-Stage Dockerfile & Compose Generator
+                  {t('docker.generatorTitle')}
                 </h2>
               </div>
               <p className="text-xs text-zinc-500 dark:text-neutral-400 mt-1">
-                Select target container architecture to inspect the generated production-grade Docker configuration.
+                {t('docker.generatorDesc')}
               </p>
             </div>
 
@@ -753,10 +753,10 @@ export default nextConfig;`
               </div>
               <div>
                 <h3 className="font-bold text-zinc-900 dark:text-white text-base">
-                  Container Memory & Cold-Start Benchmark
+                  {t('docker.benchmarkTitle')}
                 </h3>
                 <p className="text-xs text-zinc-500 dark:text-neutral-400">
-                  Simulates rapid heap allocation, V8 buffer warmup, and memory compaction under Docker cgroups limits.
+                  {t('docker.benchmarkDesc')}
                 </p>
               </div>
             </div>
@@ -767,7 +767,7 @@ export default nextConfig;`
               className="flex items-center gap-2 px-4 py-2 rounded-xl bg-amber-500 hover:bg-amber-600 disabled:opacity-50 text-black font-mono font-bold text-xs transition-all shadow-xs cursor-pointer"
             >
               <Play size={13} className={isBenchmarking ? 'animate-spin' : ''} />
-              <span>{isBenchmarking ? 'Running...' : 'Run Allocation Test'}</span>
+              <span>{isBenchmarking ? t('docker.running') : t('docker.runAllocationTest')}</span>
             </button>
           </div>
 
@@ -775,7 +775,7 @@ export default nextConfig;`
           <div className="p-4 rounded-2xl bg-zinc-50 dark:bg-neutral-950 border border-zinc-200 dark:border-neutral-800 space-y-3">
             <div className="flex items-center justify-between text-xs font-mono">
               <span className="text-zinc-600 dark:text-neutral-400 font-semibold">
-                Allocation Payload Size:
+                {t('docker.payloadSize')}
               </span>
               <span className="text-amber-500 font-bold text-sm">{benchmarkSizeMb} MB</span>
             </div>
@@ -839,10 +839,10 @@ export default nextConfig;`
           <div className="p-4 rounded-2xl bg-zinc-50 dark:bg-neutral-950 border border-zinc-200 dark:border-neutral-800 text-xs text-zinc-600 dark:text-neutral-400 space-y-1.5">
             <div className="font-bold text-zinc-800 dark:text-zinc-200 flex items-center gap-1.5">
               <Sparkles size={13} className="text-cyan-500" />
-              <span>Container Memory Optimization Checklist</span>
+              <span>{t('docker.checklistTitle')}</span>
             </div>
-            <p>• Set Node.js memory limit flag in Dockerfile: <code className="text-cyan-500">ENV NODE_OPTIONS="--max-old-space-size=384"</code> to prevent OOM kills.</p>
-            <p>• Next.js 16.3 <code className="text-cyan-500">output: 'standalone'</code> automatically traces and strips unused `node_modules`, shrinking image size from ~1.2GB to ~110MB.</p>
+            <p>• {t('docker.checklist1')}</p>
+            <p>• {t('docker.checklist2')}</p>
           </div>
         </div>
 
@@ -852,15 +852,15 @@ export default nextConfig;`
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2 text-xs font-mono font-bold text-zinc-800 dark:text-zinc-200">
                 <Terminal size={15} className="text-emerald-500" />
-                <span>CONTAINER ENV VARS</span>
+                <span>{t('docker.envVars')}</span>
               </div>
               <span className="text-[11px] font-mono text-zinc-500">
-                {filteredEnv.length} vars
+                {filteredEnv.length} {t('docker.varsCount')}
               </span>
             </div>
             <input
               type="text"
-              placeholder="Search env keys..."
+              placeholder={t('docker.searchEnv')}
               value={envSearch}
               onChange={(e) => setEnvSearch(e.target.value)}
               className="w-full px-3 py-1.5 text-xs rounded-xl bg-zinc-100 dark:bg-neutral-950 border border-zinc-200 dark:border-neutral-800 focus:outline-none focus:border-cyan-500 font-mono"
@@ -884,7 +884,7 @@ export default nextConfig;`
           </div>
 
           <div className="pt-3 border-t border-zinc-100 dark:border-neutral-800 text-[11px] text-zinc-500 dark:text-neutral-400 font-mono">
-            <span>All secrets automatically masked for preview safety.</span>
+            <span>{t('docker.maskedNotice')}</span>
           </div>
         </div>
       </div>

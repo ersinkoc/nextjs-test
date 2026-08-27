@@ -6,11 +6,53 @@
   --color-brand: var(--brand-primary);
   --color-brand-secondary: var(--brand-secondary);
   --color-brand-accent: var(--brand-accent);
+
+  --radius-none: 0px;
+  --radius-xs: 2px;
+  --radius-sm: 2px;
+  --radius-md: 3px;
+  --radius-lg: 4px;
+  --radius-xl: 4px;
+  --radius-2xl: 4px;
+  --radius-3xl: 4px;
+  --radius-4xl: 4px;
+  --radius-full: 4px;
 }
 
 :root {
   --brand-primary: #10b981;
   --brand-secondary: #0d9488;
   --brand-accent: #84cc16;
+}
+
+/* Sharp & Crisp Technical Architecture Aesthetic - Max 4px border-radius globally */
+.rounded-3xl,
+.rounded-2xl,
+.rounded-xl,
+.rounded-lg,
+.rounded-md,
+.rounded-full,
+[class*="rounded-3xl"],
+[class*="rounded-2xl"],
+[class*="rounded-xl"],
+[class*="rounded-lg"] {
+  border-radius: 4px !important;
+}
+
+.rounded,
+.rounded-sm,
+[class*="rounded-sm"] {
+  border-radius: 2px !important;
+}
+
+.rounded-none {
+  border-radius: 0px !important;
+}
+
+/* Status indicator pips / LED signals */
+span.animate-ping,
+span[class*="w-1.5"][class*="h-1.5"],
+span[class*="w-2"][class*="h-2"] {
+  border-radius: 9999px !important;
 }
 

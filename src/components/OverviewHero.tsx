@@ -98,20 +98,20 @@ export const OverviewHero: React.FC<OverviewHeroProps> = ({ setActiveTab, notesC
   const recentCommits = [
     {
       id: '1',
-      title: language === 'tr' ? 'feat: Next.js 16.3 Instant Navigations & Rust React Compiler' : 'feat: Next.js 16.3 Instant Navigations & Rust React Compiler',
-      time: language === 'tr' ? 'Az önce' : 'Just now',
+      title: t('hero.commit1Title'),
+      time: t('hero.commit1Time'),
       color: 'from-emerald-400 to-cyan-400',
     },
     {
       id: '2',
-      title: language === 'tr' ? 'perf: Turbopack persistent caching ile %90 bellek tasarrufu' : 'perf: Turbopack persistent caching with 90% memory savings',
-      time: language === 'tr' ? '30 dk önce' : '30m ago',
+      title: t('hero.commit2Title'),
+      time: t('hero.commit2Time'),
       color: 'bg-neutral-700',
     },
     {
       id: '3',
-      title: language === 'tr' ? 'chore: Node 24 LTS (Krypton) & TypeScript 7 motoru aktif' : 'chore: Node 24 LTS (Krypton) & TypeScript 7 engine enabled',
-      time: language === 'tr' ? '2 sa önce' : '2h ago',
+      title: t('hero.commit3Title'),
+      time: t('hero.commit3Time'),
       color: 'bg-neutral-800',
     },
   ];
@@ -456,7 +456,7 @@ export const OverviewHero: React.FC<OverviewHeroProps> = ({ setActiveTab, notesC
           </div>
 
           <p className="text-[10px] font-mono text-zinc-400 dark:text-neutral-500 mt-1">
-            Turbopack Engine: Rust v1.85 &bull; JIT Persistent Cache Active
+            {t('hero.commitFooter')}
           </p>
         </div>
 
@@ -520,11 +520,11 @@ export const OverviewHero: React.FC<OverviewHeroProps> = ({ setActiveTab, notesC
             <div className="flex items-center gap-2">
               <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse"></span>
               <h3 className="text-base font-bold text-zinc-900 dark:text-white font-sans tracking-tight">
-                Next.js 16.3 Full-Stack Pipeline & Dataflow Architecture
+                {t('hero.pipelineTitle')}
               </h3>
             </div>
             <p className="text-xs text-zinc-500 dark:text-neutral-400 mt-1">
-              İstemciden (CSR) sunucu çekirdeğine (Node 24) ve kalıcı SQLite WAL diskine kadar tüm katmanları canlı inceleyin.
+              {t('hero.pipelineDesc')}
             </p>
           </div>
 
@@ -541,7 +541,7 @@ export const OverviewHero: React.FC<OverviewHeroProps> = ({ setActiveTab, notesC
               ) : (
                 <RefreshCw size={13} className="text-emerald-500 dark:text-emerald-600" />
               )}
-              <span>{isDiagnosing ? 'Tarama Yapılıyor...' : 'Sistem Sağlığını Tara'}</span>
+              <span>{isDiagnosing ? t('hero.diagScanning') : t('hero.diagScanBtn')}</span>
             </motion.button>
           </div>
         </div>
@@ -601,11 +601,11 @@ export const OverviewHero: React.FC<OverviewHeroProps> = ({ setActiveTab, notesC
             <div className="flex items-center gap-2">
               <ShieldCheck size={16} className="text-emerald-400" />
               <span className="font-bold text-white uppercase tracking-wider text-[11px]">
-                Active Engine Health & Latency Telemetry (Live Pulse)
+                {t('hero.diagTelemetryTitle')}
               </span>
             </div>
             <span className="text-[10px] text-zinc-400 font-mono">
-              Status: <strong className="text-emerald-400">100% Operational</strong> • V8 13.4
+              {t('hero.diagStatusOperational')}
             </span>
           </div>
 

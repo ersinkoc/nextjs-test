@@ -24,6 +24,7 @@ import { useI18n } from '../i18n';
 import { ConsoleMonitor } from './ConsoleMonitor';
 import { SystemResources } from './SystemResources';
 import { ThemePreview } from './ThemePreview';
+import { ServerRequestTracer } from './ServerRequestTracer';
 
 export const DeveloperTools: React.FC = () => {
   const { t, language } = useI18n();
@@ -154,6 +155,9 @@ export async function register() {
 
       {/* Theme & Color Palette Preview Studio */}
       <ThemePreview />
+
+      {/* Real-time Server-Side Request Tracer & Middleware Interceptor */}
+      <ServerRequestTracer />
 
       {/* Real-time Intercepted Console Monitor */}
       <ConsoleMonitor />
