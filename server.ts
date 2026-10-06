@@ -1655,12 +1655,18 @@ async function startServer() {
     }
   });
 
+  // Create HTTP Server & Attach WebSocket Server
+  const server = http.createServer(app);
+
   // ==========================================
   // Vite Integration (Dev Middleware / Prod Static)
   // ==========================================
   if (process.env.NODE_ENV !== 'production') {
     const vite = await createViteServer({
-      server: { middlewareMode: true },
+      server: {
+        middlewareMode: true,
+        hmr: process.env.DISABLE_HMR === 'true' ? false : { server },
+      },
       appType: 'spa',
     });
     app.use(vite.middlewares);
@@ -1672,8 +1678,6 @@ async function startServer() {
     });
   }
 
-  // Create HTTP Server & Attach WebSocket Server
-  const server = http.createServer(app);
   const wss = new WebSocketServer({ server, path: '/ws' });
 
   wss.on('connection', (ws: WebSocket, req) => {

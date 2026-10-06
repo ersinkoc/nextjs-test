@@ -3,12 +3,37 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Next.js Test Arena for NineDeploy</title>
-    <meta name="description" content="An application built with Google AI Studio." />
-    <meta property="og:title" content="My Google AI Studio App" />
-    <meta property="og:description" content="An application built with Google AI Studio." />
+    <title>Next.js Test Arena</title>
+    <meta name="description" content="Comprehensive Next.js 16.3 & Node.js 24 LTS test arena with Persistent SQLite Storage (/data volume mount), Lightweight SQL Syntax Highlighting Code Editor with auto-formatting, Interactive Schema Modifier (Add/Drop/Rename columns & tables), ER Schema Graph Viewer, Theme Preview Studio, Directus CMS Bridge, Bento Grid UI, and dual language (TR/EN) support." />
+    <meta property="og:title" content="Next.js Test Arena" />
+    <meta property="og:description" content="Comprehensive Next.js 16.3 & Node.js 24 LTS test arena with Persistent SQLite Storage (/data volume mount), Lightweight SQL Syntax Highlighting Code Editor with auto-formatting, Interactive Schema Modifier (Add/Drop/Rename columns & tables), ER Schema Graph Viewer, Theme Preview Studio, Directus CMS Bridge, Bento Grid UI, and dual language (TR/EN) support." />
     <meta property="og:type" content="website" />
     <meta name="twitter:card" content="summary_large_image" />
+    <script>
+      // Gracefully ignore Vite HMR WebSocket connection errors in sandbox/iframe environment
+      window.addEventListener('error', function (event) {
+        if (
+          event?.message?.includes?.('WebSocket') ||
+          event?.filename?.includes?.('@vite/client') ||
+          event?.message?.includes?.('createWebSocketModuleRunnerTransport')
+        ) {
+          event.stopImmediatePropagation?.();
+          event.preventDefault?.();
+          return true;
+        }
+      }, true);
+      window.addEventListener('unhandledrejection', function (event) {
+        const reason = event?.reason?.message || String(event?.reason || '');
+        if (
+          reason.includes('WebSocket') ||
+          reason.includes('@vite/client') ||
+          reason.includes('createWebSocketModuleRunnerTransport')
+        ) {
+          event.stopImmediatePropagation?.();
+          event.preventDefault?.();
+        }
+      }, true);
+    </script>
   </head>
   <body>
     <div id="root"></div>
