@@ -18,7 +18,7 @@ RUN npm install --no-audit
 COPY . .
 
 # Build both Vite frontend and Express server.cjs bundle
-RUN npm run build
+RUN npm run build && test -f dist/server.cjs || npx esbuild server.ts --bundle --platform=node --format=cjs --packages=external --sourcemap --outfile=dist/server.cjs
 
 # ==========================================
 # Stage 2: Production Runtime Stage
